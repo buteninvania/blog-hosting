@@ -4,7 +4,7 @@ import {BlogsCreateModel} from "../../src/features/blogs/models/BlogsCreateModel
 import {codedAuth} from "./datasets"
 
 export const blogsTestManager = {
-    createBlog: async (data: BlogsCreateModel, statusCode: HTTP_STATUS_TYPE = SETTINGS.HTTP_STATUSES.CREATED) => {
+    createBlog: async (data: BlogsCreateModel, codedAuth: string | null = null, statusCode: HTTP_STATUS_TYPE = SETTINGS.HTTP_STATUSES.CREATED) => {
         const response = await req
             .post(`${SETTINGS.PATH.BLOGS}`)
             .set({'Authorization': 'Basic ' + codedAuth})
@@ -17,7 +17,7 @@ export const blogsTestManager = {
             createdEntity = response.body;
 
             expect(createdEntity).toEqual({
-                id: expect.any(Number),
+                id: expect.any(String),
                 ...data
             })
         }

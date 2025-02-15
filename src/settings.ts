@@ -14,6 +14,7 @@ export const SETTINGS = {
         NO_CONTENT: 204,
 
         BAD_REQUEST: 400,
+        NO_AUTH: 401,
         NOT_FOUND: 404
     },
     ADMIN: process.env.ADMIN || 'admin:qwerty',

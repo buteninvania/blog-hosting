@@ -25,10 +25,8 @@ export const adminMiddleware = (req: Request, res: Response, next: NextFunction)
         return
     }
 
-    const decodedAuth = fromBase64ToUTF8(auth.slice(6))
     const codedAuth = fromUTF8ToBase64(SETTINGS.ADMIN)
 
-    // if (decodedAuth !== SETTINGS.ADMIN) {
     if (auth.slice(6) !== codedAuth) {
         res.status(401).json({})
         return

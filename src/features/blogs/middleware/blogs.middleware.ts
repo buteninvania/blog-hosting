@@ -1,33 +1,41 @@
-import {RequestWithBody, RequestWithParamsAndBody} from "../../../types";
-import {Response} from "express";
+import { body } from "express-validator";
+import { adminMiddleware } from "../../../global-middlewares/admin-middleware";
+import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
+import { NextFunction, Request, Response } from "express";
+import {blogsRepository} from "../../../repository/blogs-repository";
 import {SETTINGS} from "../../../settings";
-import {BlogsCreateModel} from "../models/BlogsCreateModel";
-import {BlogsViewModel} from "../models/BlogsViewModel";
-import {OutputErrorsType} from "../../types/output-errors-type";
-import {createInputValidation, updateInputValidation} from "../validator/blog-data-validator";
-import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
-import {BlogsUpdateModel} from "../models/BlogsUpdateModel";
 
-export const createInputMiddleware = (req: RequestWithBody<BlogsCreateModel>, res: Response<BlogsViewModel | OutputErrorsType>, next: () => void) => {
-    const errorsMessages = createInputValidation(req.body);
+export const nameValidator = body('name')
+    .isString().withMessage('not string')
+    .trim().isLength({min: 1, max: 15}).withMessage('more then 15 or 0')
 
-    if (errorsMessages.errorsMessages?.length) {
-        res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
-        res.json(errorsMessages)
-        return
+export const descriptionValidator = body('description')
+    .isString().withMessage('not string')
+    .trim().isLength({min: 1, max: 500}).withMessage('more then 500 or 0')
+
+export const websiteUrlValidator = body('websiteUrl')
+    .isString().withMessage('not string')
+    .trim().isURL().withMessage('not url')
+    .isLength({min: 1, max: 100}).withMessage('more then 100 or 0')
+
+export const findBlogValidator = (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+    const foundValidator = blogsRepository.get(req.params.id);
+    if (foundValidator) {
+        next()
+    } else {
+        res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND)
     }
-
-    next()
 }
 
-export const updateInputMiddleware = (req: RequestWithParamsAndBody<BlogsURIParamsModel, BlogsUpdateModel>, res: Response<OutputErrorsType | null>, next: () => void) => {
-    const errorsMessages = updateInputValidation(req.body);
+export const createBlogValidators = [
+    adminMiddleware,
+    nameValidator,
+    descriptionValidator,
+    websiteUrlValidator,
+    inputCheckErrorsMiddleware
+];
 
-    if (errorsMessages.errorsMessages?.length) {
-        res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
-        res.json(errorsMessages)
-        return
-    }
-
-    next()
-}
+export const deleteBlogValidators = [
+    adminMiddleware,
+    findBlogValidator
+]

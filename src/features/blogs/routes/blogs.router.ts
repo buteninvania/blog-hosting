@@ -7,15 +7,16 @@ import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
 import {BlogsCreateModel} from "../models/BlogsCreateModel";
 import {OutputErrorsType} from "../../types/output-errors-type";
 import {BlogsUpdateModel} from "../models/BlogsUpdateModel";
+import {createBlogValidators, deleteBlogValidators} from "../middleware/blogs.middleware";
 
 export const blogsRouter = Router();
 
 const blogController = {
     getBlogsController: (req: Request, res: Response<BlogsViewModel[] | []>) => {
-        res.status(SETTINGS.HTTP_STATUSES.OK).json(blogsRepository.getBlogs());
+        res.status(SETTINGS.HTTP_STATUSES.OK).json(blogsRepository.getAll());
     },
     getBlogController: (req: RequestWithParams<BlogsURIParamsModel>, res: Response<BlogsViewModel>) => {
-        const foundBlog = blogsRepository.getBlogById(req.params.id);
+        const foundBlog = blogsRepository.get(req.params.id);
         foundBlog
             ? res.status(SETTINGS.HTTP_STATUSES.OK).json(foundBlog)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
@@ -23,29 +24,27 @@ const blogController = {
     createBlogController: (req: RequestWithBody<BlogsCreateModel>, res: Response<BlogsViewModel | OutputErrorsType>) => {
         const {name, websiteUrl, description} = req.body;
 
-        const blogId = blogsRepository.createBlog(
-            name, websiteUrl, description
-        );
+        const blogId = blogsRepository.create({name, websiteUrl, description});
 
-        const newBlog = blogsRepository.getBlogById(blogId);
+        const newBlog = blogsRepository.get(blogId);
         newBlog
             ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newBlog)
-            : res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
+            : res.sendStatus(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
     },
     updateBlogController: (req: RequestWithParamsAndBody<BlogsURIParamsModel, BlogsUpdateModel>, res: Response<OutputErrorsType | null>) => {
-        blogsRepository.updateBlog(req.params.id, req.body)
+        blogsRepository.put(req.params.id, req.body)
             ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     },
     deleteBlogController: (req: RequestWithParams<BlogsURIParamsModel>, res: Response) => {
-        blogsRepository.deleteBlog(req.params.id)
-        ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
-        : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+        blogsRepository.delete(req.params.id)
+            ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+            : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     }
 }
 
 blogsRouter.get('/', blogController.getBlogsController)
 blogsRouter.get('/:id', blogController.getBlogController)
-blogsRouter.post('/',blogController.createBlogController)
+blogsRouter.post('/', ...createBlogValidators, blogController.createBlogController)
 blogsRouter.put('/:id', blogController.updateBlogController)
-blogsRouter.delete('/:id', blogController.deleteBlogController)
+blogsRouter.delete('/:id', ...deleteBlogValidators, blogController.deleteBlogController)
