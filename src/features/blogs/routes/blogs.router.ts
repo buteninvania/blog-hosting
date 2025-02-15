@@ -1,7 +1,6 @@
 import {Router, Request, Response} from "express";
 import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../../../types";
 import {SETTINGS} from "../../../settings";
-import {BlogDbType} from "../../../db/blog-db-type";
 import {blogsRepository} from "../../../repository/blogs-repository";
 import {BlogsViewModel} from "../models/BlogsViewModel";
 import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
@@ -12,7 +11,7 @@ import {BlogsUpdateModel} from "../models/BlogsUpdateModel";
 export const blogsRouter = Router();
 
 const blogController = {
-    getBlogsController: (req: Request, res: Response<BlogDbType[]>) => {
+    getBlogsController: (req: Request, res: Response<BlogsViewModel[] | []>) => {
         res.status(SETTINGS.HTTP_STATUSES.OK).json(blogsRepository.getBlogs());
     },
     getBlogController: (req: RequestWithParams<BlogsURIParamsModel>, res: Response<BlogsViewModel>) => {

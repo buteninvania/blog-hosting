@@ -6,7 +6,7 @@ export const SETTINGS = {
     PATH: {
         BLOGS: '/blogs',
         POSTS: '/posts',
-        TESTING: '/testing/all-data'
+        TESTING: '/testing'
     },
     HTTP_STATUSES: {
         OK: 200,
@@ -15,7 +15,8 @@ export const SETTINGS = {
 
         BAD_REQUEST: 400,
         NOT_FOUND: 404
-    }
+    },
+    ADMIN: process.env.ADMIN || 'admin:qwerty',
 }
 
 type HTTP_STATUS_KEYS = keyof typeof SETTINGS.HTTP_STATUSES;
