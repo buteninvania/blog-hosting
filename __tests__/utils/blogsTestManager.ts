@@ -1,7 +1,7 @@
 import {req} from "../test.helpers";
 import {HTTP_STATUS_TYPE, SETTINGS} from "../../src/settings";
 import {BlogsCreateModel} from "../../src/features/blogs/models/BlogsCreateModel";
-import {codedAuth} from "./datasets"
+import {BlogsUpdateModel} from "../../src/features/blogs/models/BlogsUpdateModel";
 
 export const blogsTestManager = {
     createBlog: async (data: BlogsCreateModel, codedAuth: string | null = null, statusCode: HTTP_STATUS_TYPE = SETTINGS.HTTP_STATUSES.CREATED) => {
@@ -23,5 +23,14 @@ export const blogsTestManager = {
         }
 
         return {response, createdEntity}
+    },
+    updateBlog: async (data: BlogsUpdateModel, id: string = '404', codedAuth: string | null = null, statusCode: HTTP_STATUS_TYPE = SETTINGS.HTTP_STATUSES.NO_CONTENT) => {
+        const response = await req
+            .put(`${SETTINGS.PATH.BLOGS}/${id}`)
+            .set({'Authorization': 'Basic ' + codedAuth})
+            .send(data)
+            .expect(statusCode)
+
+        return {response}
     },
 }

@@ -98,4 +98,77 @@ describe(`A pack of e2e tests for the router ${SETTINGS.PATH.BLOGS}`, () => {
             .set({'Authorization': 'Basic ' + codedAuth})
             .expect(SETTINGS.HTTP_STATUSES.NOT_FOUND)
     })
+    it('should create two entity and 201', async () => {
+        const firstNewBlog: BlogsCreateModel = {
+            name: "n1",
+            description: "d1",
+            websiteUrl: "http://first.some.com"
+        }
+
+        let {response: firstResponse, createdEntity: firstCreatedEntity} = await blogsTestManager.createBlog(firstNewBlog, codedAuth)
+        expect(firstResponse.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+
+        firstBlogCreated = firstCreatedEntity
+
+        const foundFirstBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}`)
+        expect(firstBlogCreated).toEqual(foundFirstBlog.body)
+
+        const secondNewBlog: BlogsCreateModel = {
+            name: "n2",
+            description: "d2",
+            websiteUrl: "http://second.some.com"
+        }
+
+        let {response: secondResponse, createdEntity: secondCreatedEntity} = await blogsTestManager.createBlog(secondNewBlog, codedAuth)
+        expect(secondResponse.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+
+        secondBlogCreated = secondCreatedEntity
+
+        const foundSecondBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${secondBlogCreated.id}`)
+        expect(secondBlogCreated).toEqual(foundSecondBlog.body)
+    })
+    it('should first update and 204', async () => {
+        const data = { name: "n1", description: "d1", websiteUrl: "http://some1.com" }
+        const {response} = await blogsTestManager.updateBlog(data, firstBlogCreated.id, codedAuth)
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+
+        const foundFirstBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}`)
+        expect(foundFirstBlog.body.websiteUrl).toEqual(data.websiteUrl)
+
+        firstBlogCreated = foundFirstBlog.body
+    })
+    it('should second update and 204', async () => {
+        const data = { name: "n2", description: "d2", websiteUrl: "http://some2.com" }
+        const {response} = await blogsTestManager.updateBlog(data, secondBlogCreated.id, codedAuth)
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+
+        const foundSecondBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${secondBlogCreated.id}`)
+        expect(foundSecondBlog.body.websiteUrl).toEqual(data.websiteUrl)
+
+        secondBlogCreated = foundSecondBlog.body
+    })
+    it('shouldn\'t update and 404', async () => {
+        const data = { name: "n2", description: "d2", websiteUrl: "http://some2.com" }
+        const {response} = await blogsTestManager.updateBlog(data, '404', codedAuth, SETTINGS.HTTP_STATUSES.NOT_FOUND)
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NOT_FOUND)
+    })
+    it('shouldn\'t update and 400', async () => {
+        const data = { name: "there are more than 15 characters here", description: "", websiteUrl: "xyz://some2.com" }
+        const {response} = await blogsTestManager.updateBlog(data, secondBlogCreated.id, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST)
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
+        expect(response.body.errorsMessages[0].field).toEqual('name')
+        expect(response.body.errorsMessages[1].field).toEqual('description')
+        expect(response.body.errorsMessages[2].field).toEqual('websiteUrl')
+
+        const foundSecondBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${secondBlogCreated.id}`)
+        expect(secondBlogCreated).toEqual(foundSecondBlog.body)
+    })
+    it('shouldn\'t update and 401', async () => {
+        const data = {name: "n1", description: "d1", websiteUrl: "http://some1.com"}
+        const {response} = await blogsTestManager.updateBlog(data, firstBlogCreated.id, null, SETTINGS.HTTP_STATUSES.NO_AUTH)
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_AUTH)
+
+        const foundFirstBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}`)
+        expect(firstBlogCreated).toEqual(foundFirstBlog.body)
+    })
 })

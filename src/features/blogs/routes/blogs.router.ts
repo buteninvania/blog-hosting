@@ -7,7 +7,7 @@ import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
 import {BlogsCreateModel} from "../models/BlogsCreateModel";
 import {OutputErrorsType} from "../../types/output-errors-type";
 import {BlogsUpdateModel} from "../models/BlogsUpdateModel";
-import {createBlogValidators, deleteBlogValidators} from "../middleware/blogs.middleware";
+import {createBlogValidators, deleteBlogValidators, updateBlogValidators} from "../middleware/blogs.middleware";
 
 export const blogsRouter = Router();
 
@@ -46,5 +46,5 @@ const blogController = {
 blogsRouter.get('/', blogController.getBlogsController)
 blogsRouter.get('/:id', blogController.getBlogController)
 blogsRouter.post('/', ...createBlogValidators, blogController.createBlogController)
-blogsRouter.put('/:id', blogController.updateBlogController)
+blogsRouter.put('/:id', ...updateBlogValidators, blogController.updateBlogController)
 blogsRouter.delete('/:id', ...deleteBlogValidators, blogController.deleteBlogController)

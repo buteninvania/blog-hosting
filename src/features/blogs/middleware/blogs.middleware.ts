@@ -2,8 +2,8 @@ import { body } from "express-validator";
 import { adminMiddleware } from "../../../global-middlewares/admin-middleware";
 import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
 import { NextFunction, Request, Response } from "express";
-import {blogsRepository} from "../../../repository/blogs-repository";
-import {SETTINGS} from "../../../settings";
+import { blogsRepository } from "../../../repository/blogs-repository";
+import { SETTINGS } from "../../../settings";
 
 export const nameValidator = body('name')
     .isString().withMessage('not string')
@@ -38,4 +38,12 @@ export const createBlogValidators = [
 export const deleteBlogValidators = [
     adminMiddleware,
     findBlogValidator
+]
+export const updateBlogValidators = [
+    adminMiddleware,
+    findBlogValidator,
+    nameValidator,
+    descriptionValidator,
+    websiteUrlValidator,
+    inputCheckErrorsMiddleware
 ]

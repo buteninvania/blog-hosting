@@ -19,8 +19,14 @@ export const blogsRepository = {
         if (!id) return null
         return db.blogs.find(v => v.id === id) || null;
     },
-    put(id: string, blogData: BlogsCreateModel): null {
-        return null
+    put(id: string, blogData: BlogsCreateModel): boolean {
+        if (!id) return false
+        const foundBlog = db.blogs.find(b => b.id === id)
+        if (!foundBlog) return false
+        foundBlog.name = blogData.name
+        foundBlog.description = blogData.description
+        foundBlog.websiteUrl = blogData.websiteUrl
+        return true
     },
     delete(id: string): boolean {
         if (!id) return false
