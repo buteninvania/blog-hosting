@@ -5,7 +5,7 @@ import {BlogsCreateModel} from "../src/features/blogs/models/BlogsCreateModel";
 import {blogsTestManager} from "./utils/blogsTestManager";
 import {codedAuth, createString} from "./utils/datasets";
 
-describe(`A pack of e2e tests for the router ${SETTINGS.PATH.BLOGS}`, () => {
+describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
     let firstBlogCreated: BlogDbType
     let secondBlogCreated: BlogDbType
 
@@ -153,7 +153,7 @@ describe(`A pack of e2e tests for the router ${SETTINGS.PATH.BLOGS}`, () => {
         expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NOT_FOUND)
     })
     it('shouldn\'t update and 400', async () => {
-        const data = { name: "there are more than 15 characters here", description: "", websiteUrl: "xyz://some2.com" }
+        const data = { name: createString(16), description:createString(502), websiteUrl: "xyz://some2.com" }
         const {response} = await blogsTestManager.updateBlog(data, secondBlogCreated.id, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST)
         expect(response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
         expect(response.body.errorsMessages[0].field).toEqual('name')

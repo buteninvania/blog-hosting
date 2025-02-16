@@ -1,33 +1,63 @@
-import {RequestWithBody, RequestWithParamsAndBody} from "../../../types";
-import {Response} from "express";
+import {body} from "express-validator";
+import {adminMiddleware} from "../../../global-middlewares/admin-middleware";
+import {inputCheckErrorsMiddleware} from "../../../global-middlewares/inputCheckErrorsMiddleware";
+import {blogsRepository} from "../../../repository/blogs-repository";
+import {NextFunction, Request, Response} from "express";
 import {SETTINGS} from "../../../settings";
-import {PostsCreateModel} from "../models/PostsCreateModel";
-import {PostsViewModel} from "../models/PostsViewModel";
-import {OutputErrorsType} from "../../types/output-errors-type";
-import {createInputValidation, updateInputValidation} from "../validator/posts-data-validator";
-import {PostsURIParamsModel} from "../models/PostsURIParamsModel";
-import {PostsUpdateModel} from "../models/PostsUpdateModel";
+import {postsRepository} from "../../../repository/posts-repository";
 
-export const createInputMiddleware = (req: RequestWithBody<PostsCreateModel>, res: Response<PostsViewModel | OutputErrorsType>, next: () => void) => {
-    const errorsMessages = createInputValidation(req.body);
+export const titleValidator = body('title')
+    .isString().withMessage('not string')
+    .trim().isLength({min: 1, max: 30}).withMessage('more then 30 or 0')
 
-    if (errorsMessages.errorsMessages?.length) {
-        res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
-        res.json(errorsMessages)
-        return
+export const shortDescriptionValidator = body('shortDescription')
+    .isString().withMessage('not string')
+    .trim().isLength({min: 1, max: 100}).withMessage('more then 10 or 0')
+
+export const contentValidator = body('content')
+    .isString().withMessage('not string')
+    .trim().isLength({min: 1, max: 1000}).withMessage('more then 1000 or 0')
+
+
+export const findBlogValidator = body('blogId')
+    .isString().withMessage('blogId not string').trim().custom((value) => {
+        const foundValidator = blogsRepository.get(value);
+        if (!foundValidator) {
+            throw new Error('There is no blog with such a BlogId.');
+        }
+        return true
+    })
+
+export const findPostValidator = (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+    const foundValidator = postsRepository.get(req.params.id);
+    if (foundValidator) {
+        next()
+    } else {
+        res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND)
     }
-
-    next()
 }
 
-export const updateInputMiddleware = (req: RequestWithParamsAndBody<PostsURIParamsModel, PostsUpdateModel>, res: Response<OutputErrorsType | null>, next: () => void) => {
-    const errorsMessages = updateInputValidation(req.body);
+export const createPostValidators = [
+    adminMiddleware,
+    titleValidator,
+    shortDescriptionValidator,
+    contentValidator,
+    findBlogValidator,
+    inputCheckErrorsMiddleware
+];
 
-    if (errorsMessages.errorsMessages?.length) {
-        res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
-        res.json(errorsMessages)
-        return
-    }
+export const updatePostValidators = [
+    adminMiddleware,
+    findPostValidator,
+    titleValidator,
+    shortDescriptionValidator,
+    contentValidator,
+    findBlogValidator,
+    inputCheckErrorsMiddleware
+]
 
-    next()
-}
+export const deletePostValidators = [
+    adminMiddleware,
+    findPostValidator,
+    inputCheckErrorsMiddleware
+]

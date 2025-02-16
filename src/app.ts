@@ -1,7 +1,6 @@
 import express from 'express'
 import cors from 'cors'
 import { SETTINGS } from './settings'
-import { db } from "./db/db";
 import { blogsRouter } from "./features/blogs/routes/blogs.router";
 import { postsRouter } from "./features/posts/routes/posts.router";
 import { testRouter } from './features/testing/routes/test.router';

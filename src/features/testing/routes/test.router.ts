@@ -5,11 +5,11 @@ import { SETTINGS } from "../../../settings";
 export const testRouter = Router();
 
 const testController = {
-    cleareDatabase: (req: Request, res: Response) => {
+    clearDatabase: (req: Request, res: Response) => {
         db.blogs = [];
         db.posts = [];
         res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
     }
 }
 
-testRouter.delete('/', testController.cleareDatabase)
+testRouter.delete('/all-data', testController.clearDatabase)

@@ -8,36 +8,35 @@ import {OutputErrorsType} from "../../types/output-errors-type";
 import {PostsUpdateModel} from "../models/PostsUpdateModel";
 import {PostDbType} from "../../../db/post-db-type";
 import {postsRepository} from "../../../repository/posts-repository";
+import {createPostValidators, deletePostValidators, updatePostValidators} from "../middleware/posts.middleware";
 
 export const postsRouter = Router();
 
 const postController = {
     getPostsController: (req: Request, res: Response<PostDbType[]>) => {
-        res.status(SETTINGS.HTTP_STATUSES.OK).json(postsRepository.getPosts());
+        res.status(SETTINGS.HTTP_STATUSES.OK).json(postsRepository.getAll());
     },
     getPostController: (req: RequestWithParams<PostsURIParamsModel>, res: Response<PostsViewModel>) => {
-        const foundPost = postsRepository.getPostById(req.params.id);
+        const foundPost = postsRepository.get(req.params.id);
         foundPost
             ? res.status(SETTINGS.HTTP_STATUSES.OK).json(foundPost)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     },
     createPostController: (req: RequestWithBody<PostsCreateModel>, res: Response<PostsViewModel | OutputErrorsType>) => {
-        const {title, shortDescription, content, blogId} = req.body;
+        const postId = postsRepository.create(req.body);
 
-        const postId = postsRepository.createPost(req.body);
-
-        const newPost = postsRepository.getPostById(postId);
+        const newPost = postsRepository.get(postId);
         newPost
             ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newPost)
             : res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
     },
     updatePostController: (req: RequestWithParamsAndBody<PostsURIParamsModel, PostsUpdateModel>, res: Response<OutputErrorsType | null>) => {
-        postsRepository.updatePost(req.params.id, req.body)
+        postsRepository.put(req.params.id, req.body)
             ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     },
     deletePostController: (req: RequestWithParams<PostsURIParamsModel>, res: Response) => {
-        postsRepository.deletePost(req.params.id)
+        postsRepository.delete(req.params.id)
         ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
         : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     }
@@ -45,6 +44,6 @@ const postController = {
 
 postsRouter.get('/', postController.getPostsController)
 postsRouter.get('/:id', postController.getPostController)
-postsRouter.post('/',postController.createPostController)
-postsRouter.put('/:id', postController.updatePostController)
-postsRouter.delete('/:id', postController.deletePostController)
+postsRouter.post('/', ...createPostValidators, postController.createPostController)
+postsRouter.put('/:id', ...updatePostValidators, postController.updatePostController)
+postsRouter.delete('/:id', ...deletePostValidators, postController.deletePostController)
