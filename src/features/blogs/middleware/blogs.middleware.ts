@@ -28,7 +28,7 @@ export const findBlogValidator = (req: Request<{id: string}>, res: Response, nex
 }
 
 export const createBlogValidators = [
-    adminMiddleware,
+    //adminMiddleware,
     nameValidator,
     descriptionValidator,
     websiteUrlValidator,
@@ -36,8 +36,8 @@ export const createBlogValidators = [
 ];
 
 export const deleteBlogValidators = [
-    adminMiddleware,
-    findBlogValidator
+    // adminMiddleware,
+    // findBlogValidator
 ]
 export const updateBlogValidators = [
     adminMiddleware,

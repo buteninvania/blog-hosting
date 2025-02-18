@@ -18,6 +18,10 @@ export const SETTINGS = {
         NOT_FOUND: 404
     },
     ADMIN: process.env.ADMIN || 'admin:qwerty',
+    MONGODB_URI: process.env.MONGO_URL || 'mongodb://0.0.0.0:27017',
+    DB_NAME: "buteninvania",
+    BLOG_COLLECTION_NAME: "blogs",
+    POST_COLLECTION_NAME: "posts"
 }
 
 type HTTP_STATUS_KEYS = keyof typeof SETTINGS.HTTP_STATUSES;
