@@ -12,6 +12,8 @@ export const blogsRepository = {
     async create(blog: BlogsCreateModel): Promise<string> {
         const newBlog: BlogDbType = {
             id: String(Date.now() + Math.random()),
+            createdAt: new Date().toISOString(),
+            isMembership: false,
             ...blog
         }
         await blogCollection.insertOne(newBlog);
@@ -46,6 +48,8 @@ export const blogsRepository = {
             description: blog.description,
             websiteUrl: blog.websiteUrl,
             name: blog.name,
+            createdAt: blog.createdAt,
+            isMembership: blog.isMembership
         }
     }
 }

@@ -18,6 +18,8 @@ export const blogsTestManager = {
 
             expect(createdEntity).toEqual({
                 id: expect.any(String),
+                createdAt: expect.any(String),
+                isMembership: expect.any(Boolean),
                 ...data
             })
         }

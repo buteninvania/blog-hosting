@@ -19,6 +19,7 @@ export const postsTestManager = {
             expect(createdEntity).toEqual({
                 id: expect.any(String),
                 blogName: expect.any(String),
+                createdAt: expect.any(String),
                 ...data
             })
         }

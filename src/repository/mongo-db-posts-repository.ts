@@ -11,6 +11,7 @@ export const postsRepository = {
         const newPost: PostDbType = {
             id: new Date().toISOString() + Math.random(),
             blogName,
+            createdAt: new Date().toISOString(),
             ...post
         }
         await postCollection.insertOne(newPost);
@@ -50,7 +51,8 @@ export const postsRepository = {
             shortDescription: post.shortDescription,
             content: post.content,
             blogId: post.blogId,
-            blogName: post.blogName
+            blogName: post.blogName,
+            createdAt: post.createdAt
         }
     }
 }

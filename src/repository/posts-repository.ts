@@ -13,6 +13,7 @@ export const postsRepository = {
             shortDescription: post.shortDescription,
             blogId: post.blogId,
             blogName: blogsRepository.get(post.blogId)!.name,
+            createdAt: new Date().toISOString()
         }
         db.posts = [...db.posts, newPost];
         return newPost.id;
@@ -44,7 +45,8 @@ export const postsRepository = {
             shortDescription: post.shortDescription,
             content: post.content,
             blogId: post.blogId,
-            blogName: post.blogName
+            blogName: post.blogName,
+            createdAt: post.createdAt
         }
     }
 }
