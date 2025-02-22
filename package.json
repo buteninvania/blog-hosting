@@ -7,9 +7,10 @@
   "license": "MIT",
   "scripts": {
     "watch": "tsc -w",
-    "dev": "yarn nodemon --inspect dist/index.js",
-    "jest": "jest -i",
-    "jest:coverage": "jest -i --watchAll --coverage"
+    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "NODE_ENV=development yarn nodemon --inspect dist/index.js",
+    "jest": "NODE_ENV=test jest -i",
+    "jest:coverage": "NODE_ENV=test jest -i --watchAll --coverage"
   },
   "dependencies": {
     "cors": "^2.8.5",

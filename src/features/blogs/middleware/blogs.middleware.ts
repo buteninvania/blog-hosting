@@ -2,7 +2,7 @@ import { body } from "express-validator";
 import { adminMiddleware } from "../../../global-middlewares/admin-middleware";
 import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
 import { NextFunction, Request, Response } from "express";
-import { blogsRepository } from "../../../repository/blogs-repository";
+import { blogsRepository as blogsRepositoryMongo } from "../../../repository/mongo-db-blogs-repository";
 import { SETTINGS } from "../../../settings";
 
 export const nameValidator = body('name')
@@ -18,8 +18,8 @@ export const websiteUrlValidator = body('websiteUrl')
     .trim().isURL().withMessage('not url')
     .isLength({min: 1, max: 100}).withMessage('more then 100 or 0')
 
-export const findBlogValidator = (req: Request<{id: string}>, res: Response, next: NextFunction) => {
-    const foundValidator = blogsRepository.get(req.params.id);
+export const findBlogValidator = async (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+    const foundValidator = await blogsRepositoryMongo.get(req.params.id);
     if (foundValidator) {
         next()
     } else {
@@ -28,7 +28,7 @@ export const findBlogValidator = (req: Request<{id: string}>, res: Response, nex
 }
 
 export const createBlogValidators = [
-    //adminMiddleware,
+    adminMiddleware,
     nameValidator,
     descriptionValidator,
     websiteUrlValidator,
@@ -36,8 +36,8 @@ export const createBlogValidators = [
 ];
 
 export const deleteBlogValidators = [
-    // adminMiddleware,
-    // findBlogValidator
+    adminMiddleware,
+    findBlogValidator
 ]
 export const updateBlogValidators = [
     adminMiddleware,

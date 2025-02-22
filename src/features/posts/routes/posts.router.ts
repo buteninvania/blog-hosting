@@ -7,38 +7,65 @@ import {PostsCreateModel} from "../models/PostsCreateModel";
 import {OutputErrorsType} from "../../types/output-errors-type";
 import {PostsUpdateModel} from "../models/PostsUpdateModel";
 import {PostDbType} from "../../../db/post-db-type";
-import {postsRepository} from "../../../repository/posts-repository";
+import {postsRepository} from "../../../repository/mongo-db-posts-repository";
 import {createPostValidators, deletePostValidators, updatePostValidators} from "../middleware/posts.middleware";
 
 export const postsRouter = Router();
 
 const postController = {
-    getPostsController: (req: Request, res: Response<PostDbType[]>) => {
-        res.status(SETTINGS.HTTP_STATUSES.OK).json(postsRepository.getAll());
+    getPostsController: async (req: Request, res: Response<PostDbType[]>) => {
+        // LOCAL MEMORY
+        // res.status(SETTINGS.HTTP_STATUSES.OK).json(postsRepository.getAll());
+
+        const result = await postsRepository.getAll();
+        res.status(SETTINGS.HTTP_STATUSES.OK).json(result);
     },
-    getPostController: (req: RequestWithParams<PostsURIParamsModel>, res: Response<PostsViewModel>) => {
-        const foundPost = postsRepository.get(req.params.id);
+    getPostController: async (req: RequestWithParams<PostsURIParamsModel>, res: Response<PostsViewModel>) => {
+        // LOCAL MEMORY
+        // const foundPost = postsRepository.get(req.params.id);
+        // foundPost
+        //     ? res.status(SETTINGS.HTTP_STATUSES.OK).json(foundPost)
+        //     : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+
+        const foundPost = await postsRepository.get(req.params.id);
         foundPost
             ? res.status(SETTINGS.HTTP_STATUSES.OK).json(foundPost)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     },
-    createPostController: (req: RequestWithBody<PostsCreateModel>, res: Response<PostsViewModel | OutputErrorsType>) => {
-        const postId = postsRepository.create(req.body);
+    createPostController: async (req: RequestWithBody<PostsCreateModel>, res: Response<PostsViewModel | OutputErrorsType>) => {
+        // LOCAL MEMORY
+        // const postId = postsRepository.create(req.body);
+        //
+        // const newPost = postsRepository.get(postId);
+        // newPost
+        //     ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newPost)
+        //     : res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
 
-        const newPost = postsRepository.get(postId);
+        const postId = await postsRepository.create(req.body);
+        const newPost = await postsRepository.get(postId);
         newPost
             ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newPost)
             : res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
     },
-    updatePostController: (req: RequestWithParamsAndBody<PostsURIParamsModel, PostsUpdateModel>, res: Response<OutputErrorsType | null>) => {
-        postsRepository.put(req.params.id, req.body)
+    updatePostController: async (req: RequestWithParamsAndBody<PostsURIParamsModel, PostsUpdateModel>, res: Response<OutputErrorsType | null>) => {
+        // LOCAL MEMORY
+        // postsRepository.put(req.params.id, req.body)
+        //     ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+        //     : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+
+        await postsRepository.put(req.params.id, req.body)
             ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     },
-    deletePostController: (req: RequestWithParams<PostsURIParamsModel>, res: Response) => {
-        postsRepository.delete(req.params.id)
-        ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
-        : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    deletePostController: async (req: RequestWithParams<PostsURIParamsModel>, res: Response) => {
+        // LOCAL MEMORY
+        // postsRepository.delete(req.params.id)
+        //     ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+        //     : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+
+        await postsRepository.delete(req.params.id)
+            ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+            : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     }
 }
 

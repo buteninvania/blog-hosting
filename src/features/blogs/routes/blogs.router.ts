@@ -1,8 +1,7 @@
 import {Router, Request, Response} from "express";
 import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../../../types";
 import {SETTINGS} from "../../../settings";
-import {blogsRepository} from "../../../repository/blogs-repository";
-import {blogsRepository as blogsRepositoryMongo} from "../../../repository/mongo-db-blogs-repository";
+import {blogsRepository} from "../../../repository/mongo-db-blogs-repository";
 import {BlogsViewModel} from "../models/BlogsViewModel";
 import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
 import {BlogsCreateModel} from "../models/BlogsCreateModel";
@@ -17,7 +16,7 @@ const blogController = {
         // LOCAL MEMORY
         // res.status(SETTINGS.HTTP_STATUSES.OK).json(blogsRepository.getAll());
 
-        const result = await blogsRepositoryMongo.getAll()
+        const result = await blogsRepository.getAll()
         res.status(SETTINGS.HTTP_STATUSES.OK).json(result);
     },
     getBlogController: async (req: RequestWithParams<BlogsURIParamsModel>, res: Response<BlogsViewModel>) => {
@@ -27,7 +26,7 @@ const blogController = {
         //     ? res.status(SETTINGS.HTTP_STATUSES.OK).json(foundBlog)
         //     : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
 
-        const foundBlog = await blogsRepositoryMongo.get(req.params.id);
+        const foundBlog = await blogsRepository.get(req.params.id);
         foundBlog
             ? res.status(SETTINGS.HTTP_STATUSES.OK).json(foundBlog)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
@@ -42,15 +41,20 @@ const blogController = {
         //     ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newBlog)
         //     : res.sendStatus(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
 
-        const blogId = await blogsRepositoryMongo.create({name, websiteUrl, description});
-        const newBlog = await blogsRepositoryMongo.get(blogId);
-        blogId
+        const blogId = await blogsRepository.create({name, websiteUrl, description});
+        const newBlog = await blogsRepository.get(blogId);
+        newBlog
             ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newBlog)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
 
     },
-    updateBlogController: (req: RequestWithParamsAndBody<BlogsURIParamsModel, BlogsUpdateModel>, res: Response<OutputErrorsType | null>) => {
-        blogsRepository.put(req.params.id, req.body)
+    updateBlogController: async (req: RequestWithParamsAndBody<BlogsURIParamsModel, BlogsUpdateModel>, res: Response<OutputErrorsType | null>) => {
+        // LOCAL MEMORY
+        // blogsRepository.put(req.params.id, req.body)
+        //     ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+        //     : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+
+        await blogsRepository.put(req.params.id, req.body)
             ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     },
@@ -60,7 +64,7 @@ const blogController = {
         //     ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
         //     : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
 
-        await blogsRepositoryMongo.delete(req.params.id)
+        await blogsRepository.delete(req.params.id)
             ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
             : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     }

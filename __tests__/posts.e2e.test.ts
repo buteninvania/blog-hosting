@@ -16,7 +16,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
     let secondPostCreated: PostDbType
 
     beforeAll(async () => {
-        await req.delete(SETTINGS.PATH.TESTING);
+        await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
     })
 
     it('should get empty array and 200', async () => {

@@ -1,10 +1,10 @@
 import {body} from "express-validator";
 import {adminMiddleware} from "../../../global-middlewares/admin-middleware";
 import {inputCheckErrorsMiddleware} from "../../../global-middlewares/inputCheckErrorsMiddleware";
-import {blogsRepository} from "../../../repository/blogs-repository";
+import {blogsRepository} from "../../../repository/mongo-db-blogs-repository";
+import {postsRepository} from "../../../repository/mongo-db-posts-repository";
 import {NextFunction, Request, Response} from "express";
 import {SETTINGS} from "../../../settings";
-import {postsRepository} from "../../../repository/posts-repository";
 
 export const titleValidator = body('title')
     .isString().withMessage('not string')
@@ -20,16 +20,16 @@ export const contentValidator = body('content')
 
 
 export const findBlogValidator = body('blogId')
-    .isString().withMessage('blogId not string').trim().custom((value) => {
-        const foundValidator = blogsRepository.get(value);
+    .isString().withMessage('blogId not string').trim().custom(async (value) => {
+        const foundValidator = await blogsRepository.get(value);
         if (!foundValidator) {
             throw new Error('There is no blog with such a BlogId.');
         }
         return true
     })
 
-export const findPostValidator = (req: Request<{id: string}>, res: Response, next: NextFunction) => {
-    const foundValidator = postsRepository.get(req.params.id);
+export const findPostValidator = async (req: Request<{id: string}>, res: Response, next: NextFunction) => {
+    const foundValidator = await postsRepository.get(req.params.id);
     if (foundValidator) {
         next()
     } else {
