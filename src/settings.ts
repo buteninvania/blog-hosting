@@ -1,9 +1,9 @@
 import { config } from 'dotenv';
 config();
 
-const MONGODB_URI = (process.env.NODE_ENV === 'production'
-    ? process.env.MONGO_URL
-    : process.env.MONGO_URL_TEST) || 'mongodb://localhost:27017';
+const MONGODB_URI = process.env.NODE_ENV === 'test'
+    ? process.env.MONGO_URL_TEST
+    : process.env.MONGO_URL
 
 export const SETTINGS = {
     PORT: process.env.PORT || 3003,
