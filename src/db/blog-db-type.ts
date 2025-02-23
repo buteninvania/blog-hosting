@@ -6,3 +6,6 @@ export type BlogDbType = {
     createdAt: string,
     isMembership: boolean
 }
+
+type BlogDbTypeKeys = keyof BlogDbType;
+export const blogDbKeys: BlogDbTypeKeys[] = ['id', 'name', 'description', 'websiteUrl', 'createdAt', 'isMembership'];

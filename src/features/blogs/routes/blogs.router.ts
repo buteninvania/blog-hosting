@@ -1,4 +1,4 @@
-import {Router, Request, Response} from "express";
+import {Router, Response} from "express";
 import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../../../types";
 import {SETTINGS} from "../../../settings";
 import {blogsRepository} from "../../../repository/mongo-db-blogs-repository";
@@ -7,12 +7,17 @@ import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
 import {BlogsCreateModel} from "../models/BlogsCreateModel";
 import {OutputErrorsType} from "../../types/output-errors-type";
 import {BlogsUpdateModel} from "../models/BlogsUpdateModel";
-import {createBlogValidators, deleteBlogValidators, updateBlogValidators} from "../middleware/blogs.middleware";
+import {
+    createBlogValidators,
+    deleteBlogValidators, getBlogsQueryParamsMiddleware,
+    updateBlogValidators
+} from "../middleware/blogs.middleware";
+import {GetBlogsQueryParamsModel} from "../models/GetBlogsQueryParamsModel";
 
 export const blogsRouter = Router();
 
 const blogController = {
-    getBlogsController: async (req: Request, res: Response<BlogsViewModel[] | []>) => {
+    getBlogsController: async (req: RequestWithParams<GetBlogsQueryParamsModel>, res: Response<BlogsViewModel[] | []>) => {
         // LOCAL MEMORY
         // res.status(SETTINGS.HTTP_STATUSES.OK).json(blogsRepository.getAll());
 
@@ -70,7 +75,7 @@ const blogController = {
     }
 }
 
-blogsRouter.get('/', blogController.getBlogsController)
+blogsRouter.get('/', getBlogsQueryParamsMiddleware, blogController.getBlogsController)
 blogsRouter.get('/:id', blogController.getBlogController)
 blogsRouter.post('/', ...createBlogValidators, blogController.createBlogController)
 blogsRouter.put('/:id', ...updateBlogValidators, blogController.updateBlogController)
