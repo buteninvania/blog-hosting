@@ -1,4 +1,4 @@
-export const blogServices = {
+export const postServices = {
     getBlogs: async () => {
 
     },

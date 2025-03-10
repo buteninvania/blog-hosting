@@ -131,10 +131,11 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
         expect(foundPost.body.blogName).toEqual(secondBlogCreated.name)
 
         const allPosts = await req.get(SETTINGS.PATH.POSTS)
+
         expect(allPosts.body.length).toEqual(2)
 
         const allBlogs = await req.get(SETTINGS.PATH.BLOGS)
-        expect(allBlogs.body.length).toEqual(2)
+        expect(allBlogs.body.items.length).toEqual(2)
     })
     it('should update first post and 204', async () => {
         const data = {

@@ -18,7 +18,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
             .get(SETTINGS.PATH.BLOGS)
             .expect(SETTINGS.HTTP_STATUSES.OK)
 
-        expect(res.body.length).toBe(0)
+        expect(res.body.items.length).toBe(0)
     })
     it('shouln\'t find and 404', async () => {
         await req
@@ -52,7 +52,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
 
         const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}`)
 
-        expect(resultBlogs.body.length).toEqual(1)
+        expect(resultBlogs.body.items.length).toEqual(1)
     })
     it('shouldn\'t create and 400', async () => {
         const newBlog: BlogsCreateModel = {
@@ -70,7 +70,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
         expect(response.body.errorsMessages[2].field).toEqual('websiteUrl')
 
         const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}`)
-        expect(resultBlogs.body.length).toEqual(1)
+        expect(resultBlogs.body.items.length).toEqual(1)
     })
     it('shouldn\'t del and 401', async () => {
         await req
@@ -80,7 +80,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
 
 
         const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}`)
-        expect(resultBlogs.body.length).toEqual(1)
+        expect(resultBlogs.body.items.length).toEqual(1)
     })
     it('should del and 204', async () => {
         await req
@@ -90,7 +90,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
 
 
         const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}`)
-        expect(resultBlogs.body.length).toEqual(0)
+        expect(resultBlogs.body.items.length).toEqual(0)
     })
     it('shouldn\'t del and 404', async () => {
         await req

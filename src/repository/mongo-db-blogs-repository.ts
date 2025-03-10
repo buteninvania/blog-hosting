@@ -1,13 +1,41 @@
 import { BlogDbType } from "../db/blog-db-type";
 import { blogCollection } from "../db/mongo-db";
 import { BlogsCreateModel } from "../features/blogs/models/BlogsCreateModel";
-import { BlogsViewModel } from "../features/blogs/models/BlogsViewModel";
+import {BlogsViewModel, PaginatedBlogsViewModel} from "../features/blogs/models/BlogsViewModel";
 import { WithId } from "mongodb";
+import {GetBlogsQueryParamsModel} from "../features/blogs/models/GetBlogsQueryParamsModel";
 
 export const blogsRepository = {
-    async getAll(): Promise<BlogsViewModel[] | [] | undefined> {
-        const result = await blogCollection.find().toArray()
-        return result.map((blog) => this.map(blog))
+    async getAll(params: GetBlogsQueryParamsModel): Promise<PaginatedBlogsViewModel | undefined> {
+        const {
+            searchNameTerm,
+            sortBy,
+            sortDirection,
+            pageNumber,
+            pageSize
+        } = params;
+
+        const query = blogCollection.find();
+
+        if (searchNameTerm) {
+            query.filter({ name: { $regex: searchNameTerm, $options: 'i' } });
+        }
+
+        if (sortBy) {
+            query.sort(`${sortBy} ${sortDirection}`);
+        }
+
+        const skip = (pageNumber - 1) * pageSize;
+        query.skip(skip).limit(pageSize);
+
+        const result = await query.toArray();
+        return {
+            pagesCount: 0,
+            page: 0,
+            pageSize: 0,
+            totalCount: 0,
+            items: result.map((blog) => this.map(blog))
+        }
     },
     async create(blog: BlogsCreateModel): Promise<string> {
         const newBlog: BlogDbType = {
@@ -45,9 +73,9 @@ export const blogsRepository = {
     map(blog: WithId<BlogDbType>): BlogsViewModel {
         return {
             id: blog.id,
+            name: blog.name,
             description: blog.description,
             websiteUrl: blog.websiteUrl,
-            name: blog.name,
             createdAt: blog.createdAt,
             isMembership: blog.isMembership
         }

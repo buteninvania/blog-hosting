@@ -4,7 +4,6 @@ import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputChe
 import { NextFunction, Request, Response } from "express";
 import { blogsRepository as blogsRepositoryMongo } from "../../../repository/mongo-db-blogs-repository";
 import { SETTINGS } from "../../../settings";
-import {GetBlogsQueryParamsModel} from "../models/GetBlogsQueryParamsModel";
 
 export const nameValidator = body('name')
     .isString().withMessage('not string')
@@ -27,36 +26,6 @@ export const findBlogValidator = async (req: Request<{id: string}>, res: Respons
         res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND)
     }
 }
-
-export const getBlogsQueryParamsMiddleware = (
-    req: Request,
-    res: Response,
-    next: NextFunction
-) => {
-    const {
-        searchNameTerm,
-        sortBy = "createdAt",
-        sortDirection = "desc",
-        pageNumber = 1,
-        pageSize = 10,
-    } = req.query;
-
-    const queryParams: GetBlogsQueryParamsModel = {
-        searchNameTerm: searchNameTerm as string | null,
-        sortBy: sortBy as string,
-        sortDirection: sortDirection as "asc" | "desc",
-        pageNumber: Number(pageNumber),
-        pageSize: Number(pageSize),
-    };
-
-    if (queryParams.sortDirection !== "asc" && queryParams.sortDirection !== "desc") {
-        queryParams.sortDirection = "desc";
-    }
-
-    Object.assign(req.query, queryParams)
-
-    next();
-};
 
 export const createBlogValidators = [
     adminMiddleware,

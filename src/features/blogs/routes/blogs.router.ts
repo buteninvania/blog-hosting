@@ -1,27 +1,30 @@
 import {Router, Response} from "express";
-import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../../../types";
+import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery} from "../../../types";
 import {SETTINGS} from "../../../settings";
 import {blogsRepository} from "../../../repository/mongo-db-blogs-repository";
-import {BlogsViewModel} from "../models/BlogsViewModel";
+import {BlogsViewModel, PaginatedBlogsViewModel} from "../models/BlogsViewModel";
 import {BlogsURIParamsModel} from "../models/BlogsURIParamsModel";
 import {BlogsCreateModel} from "../models/BlogsCreateModel";
 import {OutputErrorsType} from "../../types/output-errors-type";
 import {BlogsUpdateModel} from "../models/BlogsUpdateModel";
 import {
     createBlogValidators,
-    deleteBlogValidators, getBlogsQueryParamsMiddleware,
+    deleteBlogValidators,
     updateBlogValidators
 } from "../middleware/blogs.middleware";
 import {GetBlogsQueryParamsModel} from "../models/GetBlogsQueryParamsModel";
+import {createQueryParams} from "../../../utils";
 
 export const blogsRouter = Router();
 
 const blogController = {
-    getBlogsController: async (req: RequestWithParams<GetBlogsQueryParamsModel>, res: Response<BlogsViewModel[] | []>) => {
+    getBlogsController: async (req: RequestWithQuery<GetBlogsQueryParamsModel>, res: Response<PaginatedBlogsViewModel | []>) => {
         // LOCAL MEMORY
         // res.status(SETTINGS.HTTP_STATUSES.OK).json(blogsRepository.getAll());
 
-        const result = await blogsRepository.getAll()
+        const queryParams: GetBlogsQueryParamsModel = createQueryParams(req.query)
+        const result = await blogsRepository.getAll(queryParams)
+
         res.status(SETTINGS.HTTP_STATUSES.OK).json(result);
     },
     getBlogController: async (req: RequestWithParams<BlogsURIParamsModel>, res: Response<BlogsViewModel>) => {
@@ -75,7 +78,7 @@ const blogController = {
     }
 }
 
-blogsRouter.get('/', getBlogsQueryParamsMiddleware, blogController.getBlogsController)
+blogsRouter.get('/', blogController.getBlogsController)
 blogsRouter.get('/:id', blogController.getBlogController)
 blogsRouter.post('/', ...createBlogValidators, blogController.createBlogController)
 blogsRouter.put('/:id', ...updateBlogValidators, blogController.updateBlogController)

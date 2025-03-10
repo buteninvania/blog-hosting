@@ -3,7 +3,7 @@ config();
 
 const MONGODB_URI = process.env.NODE_ENV === 'test'
     ? process.env.MONGO_URL_TEST
-    : process.env.MONGO_URL
+    : process.env.MONGO_URL;
 
 export const SETTINGS = {
     PORT: process.env.PORT || 3003,
@@ -22,7 +22,7 @@ export const SETTINGS = {
         NOT_FOUND: 404
     },
     ADMIN: process.env.ADMIN || 'admin:qwerty',
-    MONGODB_URI,
+    MONGODB_URI: MONGODB_URI || 'mongodb://localhost:27017',
     DB_NAME: "buteninvania",
     BLOG_COLLECTION_NAME: "blogs",
     POST_COLLECTION_NAME: "posts"
