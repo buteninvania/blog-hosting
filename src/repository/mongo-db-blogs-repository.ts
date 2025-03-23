@@ -25,15 +25,20 @@ export const blogsRepository = {
             query.sort(`${sortBy} ${sortDirection}`);
         }
 
+        const totalCount = await query.count();
+
         const skip = (pageNumber - 1) * pageSize;
         query.skip(skip).limit(pageSize);
 
         const result = await query.toArray();
+
+        const pagesCount = Math.ceil(totalCount / pageSize);
+
         return {
-            pagesCount: 0,
-            page: 0,
-            pageSize: 0,
-            totalCount: 0,
+            pagesCount,
+            page: pageNumber,
+            pageSize,
+            totalCount,
             items: result.map((blog) => this.map(blog))
         }
     },

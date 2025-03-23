@@ -171,4 +171,33 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
         const foundFirstBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}`)
         expect(firstBlogCreated).toEqual(foundFirstBlog.body)
     })
+    it('should get one entity and 200', async () => {
+        const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}/?searchNameTerm=${firstBlogCreated.name}`)
+        expect(resultBlogs.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+        expect(resultBlogs.body.items.length).toEqual(1);
+        expect(resultBlogs.body.items[0]).toEqual(firstBlogCreated);
+    })
+    it('should create 100 entities and 200', async () => {
+        for (let i = 0; i < 100; i++) {
+            const newBlog: BlogsCreateModel = {
+                name: `n${i}`,
+                description: `d${i}`,
+                websiteUrl: `http://some${i}.com`
+            }
+
+            await blogsTestManager.createBlog(newBlog, codedAuth)
+        }
+
+        const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}?pageNumber=1&pageSize=10`)
+        expect(resultBlogs.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+        expect(resultBlogs.body.items.length).toEqual(10);
+        expect(resultBlogs.body.totalCount).toEqual(102);
+    })
+    it('should return second page entities and 200', async () => {
+        const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}?pageNumber=2&pageSize=10`)
+        expect(resultBlogs.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+        expect(resultBlogs.body.page).toEqual(2);
+        expect(resultBlogs.body.items.length).toEqual(10);
+        expect(resultBlogs.body.totalCount).toEqual(102);
+    })
 })
