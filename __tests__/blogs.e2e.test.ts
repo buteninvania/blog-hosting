@@ -174,6 +174,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
         expect(firstBlogCreated).toEqual(foundFirstBlog.body)
     })
     it('should get one entity and 200', async () => {
+        await new Promise(resolve => setTimeout(resolve, 100));
         const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}/?searchNameTerm=${firstBlogCreated.name}`)
         expect(resultBlogs.status).toBe(SETTINGS.HTTP_STATUSES.OK);
         expect(resultBlogs.body.items.length).toEqual(1);

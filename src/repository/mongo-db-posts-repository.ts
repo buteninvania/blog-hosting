@@ -20,24 +20,26 @@ export const postsRepository = {
     },
     async getAll(params: GetPostsQueryParamsModel): Promise<PaginatedPostsViewModel> {
         const {
-            sortBy,
-            sortDirection,
-            pageNumber,
-            pageSize
+            sortBy = 'createdAt',
+            sortDirection = 'desc',
+            pageNumber = 1,
+            pageSize = 10
         } = params;
 
         const query = postCollection.find();
 
+        const sortOptions: Record<string, 1 | -1> = {};
         if (sortBy) {
-            query.sort(`${sortBy} ${sortDirection}`);
+            sortOptions[sortBy] = sortDirection === 'asc' ? 1 : -1;
         }
 
-        const totalCount = await query.count();
-
-        const skip = (pageNumber - 1) * pageSize;
-        query.skip(skip).limit(pageSize);
-
-        const result = await query.toArray();
+        const totalCount = await postCollection.countDocuments();
+        const items = await postCollection
+            .find()
+            .sort(sortOptions)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray()
 
         const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -46,7 +48,7 @@ export const postsRepository = {
             page: pageNumber,
             pageSize,
             totalCount,
-            items: result.map((post) => this.map(post))
+            items: items.map((post) => this.map(post))
         }
     },
     async get(id: string): Promise<PostDbType | null> {
