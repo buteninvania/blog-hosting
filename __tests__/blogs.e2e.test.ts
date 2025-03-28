@@ -5,6 +5,7 @@ import {BlogsCreateModel} from "../src/features/blogs/models/BlogsCreateModel";
 import {blogsTestManager} from "./utils/blogsTestManager";
 import {codedAuth, createString} from "./utils/datasets";
 import {PostsCreateModel} from "../src/features/posts/models/PostsCreateModel";
+import {BlogsViewModel} from "../src/features/blogs/models/BlogsViewModel";
 
 describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
     let firstBlogCreated: BlogDbType
@@ -224,4 +225,83 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
         expect(posts.status).toBe(SETTINGS.HTTP_STATUSES.OK);
         expect(posts.body.items.length).toEqual(2);
     })
+    it('should delete all blogs and 204', async () => {
+        await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
+        const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}`)
+        expect(resultBlogs.body.items.length).toEqual(0)
+    })
+    it('should return blogs sorted by createdAt desc by default', async () => {
+        const newBlogCreator = (): BlogsCreateModel => {
+            const dateTimeString = new Date().getTime().toString();
+            return {
+                name: `n${dateTimeString}`,
+                description: `d${dateTimeString}`,
+                websiteUrl: `http://some${dateTimeString}.com`
+            }
+        }
+
+        await blogsTestManager.createBlog(newBlogCreator(), codedAuth)
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await blogsTestManager.createBlog(newBlogCreator(), codedAuth)
+        await new Promise(resolve => setTimeout(resolve, 10));
+        await blogsTestManager.createBlog(newBlogCreator(), codedAuth)
+        await new Promise(resolve => setTimeout(resolve, 10));
+
+        const resultBlogs = await req.get(`${SETTINGS.PATH.BLOGS}`)
+        const blogs = resultBlogs.body.items;
+
+        expect(blogs.length).toBe(3);
+        const dates = blogs.map((blog: BlogsViewModel)  => new Date(blog.createdAt).toISOString());
+        const sortedDates = [...dates].sort((a, b) =>
+            new Date(b).getTime() - new Date(a).getTime());
+
+        expect(dates).toEqual(sortedDates);
+    })
+    it('should return blogs sorted by createdAt asc when specified', async () => {
+        const response = await req.get(
+            `${SETTINGS.PATH.BLOGS}?sortBy=createdAt&sortDirection=asc`
+        );
+
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+
+        const blogs = response.body.items;
+        expect(blogs.length).toBe(3);
+
+        const dates = blogs.map((blog: BlogsViewModel) => new Date(blog.createdAt).toISOString());
+        const sortedDates = [...dates].sort((a, b) =>
+            new Date(a).getTime() - new Date(b).getTime());
+
+        expect(dates).toEqual(sortedDates);
+    });
+    it('should return blogs sorted by name desc when specified', async () => {
+        const response = await req.get(
+            `${SETTINGS.PATH.BLOGS}?sortBy=name&sortDirection=desc`
+        );
+
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+
+        const blogs = response.body.items;
+        expect(blogs.length).toBe(3);
+
+        const names = blogs.map((blog: BlogsViewModel) => blog.name);
+        const sortedNames = [...names].sort((a, b) => b.localeCompare(a));
+
+        expect(names).toEqual(sortedNames);
+    });
+    it('should return blogs sorted by createdAt desc when specified', async () => {
+        const response = await req.get(
+            `${SETTINGS.PATH.BLOGS}?sortBy=createdAt&sortDirection=desc`
+        );
+
+        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+
+        const blogs = response.body.items;
+        expect(blogs.length).toBe(3);
+
+        const dates = blogs.map((blog: BlogsViewModel)  => new Date(blog.createdAt).toISOString());
+        const sortedDates = [...dates].sort((a, b) =>
+            new Date(b).getTime() - new Date(a).getTime());
+
+        expect(dates).toEqual(sortedDates);
+    });
 })
