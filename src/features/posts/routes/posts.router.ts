@@ -1,23 +1,26 @@
 import {Router, Request, Response} from "express";
-import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody} from "../../../types";
+import {RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithQuery} from "../../../types";
 import {SETTINGS} from "../../../settings";
 import {PostsViewModel} from "../models/PostsViewModel";
 import {PostsURIParamsModel} from "../models/PostsURIParamsModel";
 import {PostsCreateModel} from "../models/PostsCreateModel";
 import {OutputErrorsType} from "../../types/output-errors-type";
 import {PostsUpdateModel} from "../models/PostsUpdateModel";
-import {PostDbType} from "../../../db/post-db-type";
+import {PaginatedPostsViewModel, PostDbType} from "../../../db/post-db-type";
 import {postsRepository} from "../../../repository/mongo-db-posts-repository";
 import {createPostValidators, deletePostValidators, updatePostValidators} from "../middleware/posts.middleware";
+import {GetPostsQueryParamsModel} from "../models/GetPostsQueryParamsModel";
+import {GetBlogsQueryParamsModel} from "../../blogs/models/GetBlogsQueryParamsModel";
+import {createQueryParamsForBlogs, createQueryParamsForPosts} from "../../../utils";
 
 export const postsRouter = Router();
 
 const postController = {
-    getPostsController: async (req: Request, res: Response<PostDbType[]>) => {
+    getPostsController: async (req: RequestWithQuery<GetPostsQueryParamsModel>, res: Response<PaginatedPostsViewModel>) => {
         // LOCAL MEMORY
         // res.status(SETTINGS.HTTP_STATUSES.OK).json(postsRepository.getAll());
-
-        const result = await postsRepository.getAll();
+        const queryParams: GetPostsQueryParamsModel = createQueryParamsForPosts(req.query)
+        const result = await postsRepository.getAll(queryParams);
         res.status(SETTINGS.HTTP_STATUSES.OK).json(result);
     },
     getPostController: async (req: RequestWithParams<PostsURIParamsModel>, res: Response<PostsViewModel>) => {

@@ -1,7 +1,8 @@
 import {PostsCreateModel} from "../features/posts/models/PostsCreateModel";
-import {PostDbType} from "../db/post-db-type";
+import {PaginatedPostsViewModel, PostDbType} from "../db/post-db-type";
 import {blogsRepository} from "./mongo-db-blogs-repository";
-import {postCollection} from "../db/mongo-db";
+import {blogCollection, postCollection} from "../db/mongo-db";
+import {GetPostsQueryParamsModel} from "../features/posts/models/GetPostsQueryParamsModel";
 
 export const postsRepository = {
     async create(post: PostsCreateModel): Promise<string> {
@@ -17,14 +18,71 @@ export const postsRepository = {
         await postCollection.insertOne(newPost);
         return newPost.id;
     },
-    async getAll(): Promise<PostDbType[]> {
-        const result = await postCollection.find().toArray()
-        return result.map((post) => this.map(post))
+    async getAll(params: GetPostsQueryParamsModel): Promise<PaginatedPostsViewModel> {
+        const {
+            sortBy,
+            sortDirection,
+            pageNumber,
+            pageSize
+        } = params;
+
+        const query = postCollection.find();
+
+        if (sortBy) {
+            query.sort(`${sortBy} ${sortDirection}`);
+        }
+
+        const totalCount = await query.count();
+
+        const skip = (pageNumber - 1) * pageSize;
+        query.skip(skip).limit(pageSize);
+
+        const result = await query.toArray();
+
+        const pagesCount = Math.ceil(totalCount / pageSize);
+
+        return {
+            pagesCount,
+            page: pageNumber,
+            pageSize,
+            totalCount,
+            items: result.map((post) => this.map(post))
+        }
     },
     async get(id: string): Promise<PostDbType | null> {
         const post = await postCollection.findOne({id})
         if (!post) return null
         return this.map(post);
+    },
+    async getPostsByBlogId(blogId: string, params: GetPostsQueryParamsModel): Promise<PaginatedPostsViewModel> {
+        const {
+            sortBy = 'createdAt',
+            sortDirection = 'desc',
+            pageNumber = 1,
+            pageSize = 10
+        } = params;
+
+        const sortOptions: Record<string, 1 | -1> = {};
+        if (sortBy) {
+            sortOptions[sortBy] = sortDirection === 'asc' ? 1 : -1;
+        }
+
+        const query = postCollection.find({ blogId }).sort(sortOptions);
+
+        const totalCount = await postCollection.countDocuments({ blogId });
+
+        const skip = (pageNumber - 1) * pageSize;
+        const result = await query.skip(skip).limit(pageSize).toArray();
+
+        const pagesCount = Math.ceil(totalCount / pageSize);
+
+        return {
+            pagesCount,
+            page: pageNumber,
+            pageSize,
+            totalCount,
+            items: result.map((post) => this.map(post))
+        };
     },
     async put(id: string, post: PostsCreateModel): Promise<boolean> {
         if (!id) return false

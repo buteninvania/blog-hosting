@@ -1,6 +1,7 @@
 import { GetBlogsQueryParamsModel } from "./features/blogs/models/GetBlogsQueryParamsModel";
+import { GetPostsQueryParamsModel } from "./features/posts/models/GetPostsQueryParamsModel";
 
-export const createQueryParams = (query: GetBlogsQueryParamsModel): GetBlogsQueryParamsModel => {
+export const createQueryParamsForBlogs = (query: GetBlogsQueryParamsModel): GetBlogsQueryParamsModel => {
     const {
         searchNameTerm,
         sortBy = "createdAt",
@@ -22,3 +23,25 @@ export const createQueryParams = (query: GetBlogsQueryParamsModel): GetBlogsQuer
     }
     return queryParams
 };
+
+export const createQueryParamsForPosts = (query: GetPostsQueryParamsModel): GetPostsQueryParamsModel => {
+    const {
+        pageNumber = 1,
+        sortBy = "createdAt",
+        sortDirection = "desc",
+        pageSize = 10,
+    } = query;
+
+    const queryParams: GetPostsQueryParamsModel = {
+        pageNumber: Number(pageNumber),
+        pageSize: Number(pageSize),
+        sortBy: sortBy as string,
+        sortDirection: sortDirection as "asc" | "desc",
+    };
+
+    if (queryParams.sortDirection !== "asc" && queryParams.sortDirection !== "desc") {
+        queryParams.sortDirection = "desc";
+    }
+
+    return queryParams
+}

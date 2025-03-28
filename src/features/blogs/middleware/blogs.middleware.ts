@@ -4,6 +4,7 @@ import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputChe
 import { NextFunction, Request, Response } from "express";
 import { blogsRepository as blogsRepositoryMongo } from "../../../repository/mongo-db-blogs-repository";
 import { SETTINGS } from "../../../settings";
+import {contentValidator, shortDescriptionValidator, titleValidator} from "../../posts/middleware/posts.middleware";
 
 export const nameValidator = body('name')
     .isString().withMessage('not string')
@@ -20,6 +21,15 @@ export const websiteUrlValidator = body('websiteUrl')
 
 export const findBlogValidator = async (req: Request<{id: string}>, res: Response, next: NextFunction) => {
     const foundValidator = await blogsRepositoryMongo.get(req.params.id);
+    if (foundValidator) {
+        next()
+    } else {
+        res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND)
+    }
+}
+
+export const findBlogIdValidator = async (req: Request<{blogId: string}>, res: Response, next: NextFunction) => {
+    const foundValidator = await blogsRepositoryMongo.get(req.params.blogId);
     if (foundValidator) {
         next()
     } else {
@@ -45,5 +55,14 @@ export const updateBlogValidators = [
     nameValidator,
     descriptionValidator,
     websiteUrlValidator,
+    inputCheckErrorsMiddleware
+]
+
+export const createPostByBlogIdValidators = [
+    adminMiddleware,
+    findBlogIdValidator,
+    titleValidator,
+    shortDescriptionValidator,
+    contentValidator,
     inputCheckErrorsMiddleware
 ]

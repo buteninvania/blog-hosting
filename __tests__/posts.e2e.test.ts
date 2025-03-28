@@ -24,7 +24,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
             .get(SETTINGS.PATH.POSTS)
             .expect(SETTINGS.HTTP_STATUSES.OK)
 
-        expect(res.body.length).toBe(0)
+        expect(res.body.items.length).toBe(0)
     })
     it('shouldn\'t find and 404', async () => {
         await req
@@ -64,7 +64,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
             .get(SETTINGS.PATH.POSTS)
             .expect(SETTINGS.HTTP_STATUSES.OK)
 
-        expect(res.body.length).toBe(0)
+        expect(res.body.items.length).toBe(0)
     })
     it('should create first blog and 201', async () => {
         const newBlog: BlogsCreateModel = {
@@ -132,7 +132,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
 
         const allPosts = await req.get(SETTINGS.PATH.POSTS)
 
-        expect(allPosts.body.length).toEqual(2)
+        expect(allPosts.body.items.length).toEqual(2)
 
         const allBlogs = await req.get(SETTINGS.PATH.BLOGS)
         expect(allBlogs.body.items.length).toEqual(2)
@@ -194,5 +194,21 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
 
         const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`)
         expect(firstPostCreated).toEqual(foundPost.body)
+    })
+    it('should create 100 posts and return the posts of the second country', async () => {
+        for (let i = 0; i < 100; i++) {
+            const newPost: PostsCreateModel = {
+                title: 'p' + i,
+                content: 'c' + i,
+                shortDescription: 's' + i,
+                blogId: secondBlogCreated.id
+            }
+
+            await postsTestManager.createPost(newPost, codedAuth)
+        }
+
+        const allPosts = await req.get(`${SETTINGS.PATH.POSTS}/?pageNumber=2`)
+        expect(allPosts.body.items.length).toEqual(10)
+        expect(allPosts.body.page).toEqual(2)
     })
 })

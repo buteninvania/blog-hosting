@@ -4,6 +4,7 @@ import {BlogDbType} from "../src/db/blog-db-type";
 import {BlogsCreateModel} from "../src/features/blogs/models/BlogsCreateModel";
 import {blogsTestManager} from "./utils/blogsTestManager";
 import {codedAuth, createString} from "./utils/datasets";
+import {PostsCreateModel} from "../src/features/posts/models/PostsCreateModel";
 
 describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
     let firstBlogCreated: BlogDbType
@@ -199,5 +200,28 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
         expect(resultBlogs.body.page).toEqual(2);
         expect(resultBlogs.body.items.length).toEqual(10);
         expect(resultBlogs.body.totalCount).toEqual(102);
+    })
+    it('should create 2 posts in one blog and 201', async () => {
+        const newPost1: PostsCreateModel = {
+            title: 't1',
+            content: 'c1',
+            shortDescription: 'sd1',
+            blogId: firstBlogCreated.id
+        }
+        const newPost2: PostsCreateModel = {
+            title: 't2',
+            content: 'c2',
+            shortDescription: 'sd2',
+            blogId: firstBlogCreated.id
+        }
+        const resultBlogs = await req.post(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}/posts`).set({'Authorization': 'Basic ' + codedAuth}).send(newPost1)
+        expect(resultBlogs.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
+
+        const resultBlogs2 = await req.post(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}/posts`).set({'Authorization': 'Basic ' + codedAuth}).send(newPost2)
+        expect(resultBlogs2.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
+
+        const posts = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}/posts`)
+        expect(posts.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+        expect(posts.body.items.length).toEqual(2);
     })
 })

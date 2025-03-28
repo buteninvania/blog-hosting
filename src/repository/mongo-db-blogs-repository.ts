@@ -6,31 +6,32 @@ import { WithId } from "mongodb";
 import {GetBlogsQueryParamsModel} from "../features/blogs/models/GetBlogsQueryParamsModel";
 
 export const blogsRepository = {
-    async getAll(params: GetBlogsQueryParamsModel): Promise<PaginatedBlogsViewModel | undefined> {
+    async getAll(params: GetBlogsQueryParamsModel): Promise<PaginatedBlogsViewModel> {
         const {
-            searchNameTerm,
-            sortBy,
-            sortDirection,
-            pageNumber,
-            pageSize
+            searchNameTerm = '',
+            sortBy = 'createdAt',
+            sortDirection = 'desc',
+            pageNumber = 1,
+            pageSize = 10
         } = params;
 
-        const query = blogCollection.find();
-
+        const filter: any = {};
         if (searchNameTerm) {
-            query.filter({ name: { $regex: searchNameTerm, $options: 'i' } });
+            filter.name = { $regex: searchNameTerm, $options: 'i' };
         }
 
+        const sortOptions: Record<string, 1 | -1> = {};
         if (sortBy) {
-            query.sort(`${sortBy} ${sortDirection}`);
+            sortOptions[sortBy] = sortDirection === 'asc' ? 1 : -1;
         }
 
-        const totalCount = await query.count();
-
-        const skip = (pageNumber - 1) * pageSize;
-        query.skip(skip).limit(pageSize);
-
-        const result = await query.toArray();
+        const totalCount = await blogCollection.countDocuments(filter);
+        const items = await blogCollection
+            .find(filter)
+            .sort(sortOptions)
+            .skip((pageNumber - 1) * pageSize)
+            .limit(pageSize)
+            .toArray()
 
         const pagesCount = Math.ceil(totalCount / pageSize);
 
@@ -39,8 +40,8 @@ export const blogsRepository = {
             page: pageNumber,
             pageSize,
             totalCount,
-            items: result.map((blog) => this.map(blog))
-        }
+            items: items.map(blog => this.map(blog))
+        };
     },
     async create(blog: BlogsCreateModel): Promise<string> {
         const newBlog: BlogDbType = {
