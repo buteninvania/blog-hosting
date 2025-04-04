@@ -1,17 +1,17 @@
-export type PaginatedPostsViewModel = {
-    pagesCount: number
-    page: number
-    pageSize: number
-    totalCount: number
-    items: PostDbType[]
+export interface PaginatedPostsViewModel {
+  items: PostDbType[];
+  page: number;
+  pagesCount: number;
+  pageSize: number;
+  totalCount: number;
 }
 
-export type PostDbType = {
-    id: string
-    title: string
-    shortDescription: string
-    content: string
-    blogId: string
-    blogName: string,
-    createdAt: string
+export interface PostDbType {
+  blogId: string;
+  blogName: string;
+  content: string;
+  createdAt: string;
+  id: string;
+  shortDescription: string;
+  title: string;
 }
