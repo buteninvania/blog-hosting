@@ -1,3 +1,4 @@
+import { createUserValidators } from "@/features/users/middleware/users.middleware";
 import { userServices } from "@/features/users/service/users.service";
 import { SETTINGS } from "@/settings";
 import { RequestWithBody, RequestWithParams, RequestWithQuery } from "@/types";
@@ -28,5 +29,5 @@ const userController = {
 };
 
 usersRouter.get("/", userController.getUsersController);
-usersRouter.post("/", userController.createUserController);
+usersRouter.post("/", ...createUserValidators, userController.createUserController);
 usersRouter.delete("/:id", userController.deleteUserController);

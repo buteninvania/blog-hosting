@@ -1,10 +1,10 @@
-import { usersRouter } from "@/features/users/routes/users.router";
 import cors from "cors";
 import express from "express";
 
 import { blogsRouter } from "./features/blogs/routes/blogs.router";
 import { postsRouter } from "./features/posts/routes/posts.router";
 import { testRouter } from "./features/testing/routes/test.router";
+import { usersRouter } from "./features/users/routes/users.router";
 import { SETTINGS } from "./settings";
 
 export const app = express();

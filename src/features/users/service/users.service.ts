@@ -5,10 +5,14 @@ import { UsersCreateModel } from "../models/UsersCreateModel";
 
 export const userServices = {
   createUser: async (userData: UsersCreateModel) => {
-    return await usersRepository.create(userData);
+    const userId = await usersRepository.create(userData);
+    return await usersRepository.get(userId);
   },
   deleteUser: async (id: string) => {
     return await usersRepository.delete(id);
+  },
+  getUser: async (id: string) => {
+    return await usersRepository.get(id);
   },
   getUsers: async (queryParams: GetUsersQueryParamsModel) => {
     return await usersRepository.getAll(queryParams);
