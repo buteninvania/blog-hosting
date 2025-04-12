@@ -13,6 +13,8 @@ export const app = express();
 app.use(express.json());
 app.use(cors());
 
+console.log("test");
+
 app.get("/", (req, res) => {
   res.status(200).json({ version: "1.0" });
 });
