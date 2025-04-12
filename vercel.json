@@ -1,5 +1,7 @@
 {
   "version": 2,
+  "buildCommand": "yarn build",
+  "outputDirectory": "dist",
   "builds": [
     {
       "src": "dist/index.js",
@@ -11,7 +13,5 @@
       "src": "/(.*)",
       "dest": "dist/index.js"
     }
-  ],
-  "buildCommand": "yarn build",
-  "outputDirectory": "dist"
+  ]
 }
