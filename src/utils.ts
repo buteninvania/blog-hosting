@@ -1,4 +1,4 @@
-import { GetUsersQueryParamsModel } from "@/features/users/models/GetUsersQueryParamsModel";
+import { GetUsersQueryParamsModel, UsersQueryParamsModel } from "@/features/users/models/GetUsersQueryParamsModel";
 
 import { GetBlogsQueryParamsModel } from "./features/blogs/models/GetBlogsQueryParamsModel";
 import { GetPostsQueryParamsModel } from "./features/posts/models/GetPostsQueryParamsModel";
@@ -37,10 +37,13 @@ export const createQueryParamsForPosts = (query: GetPostsQueryParamsModel): GetP
   return queryParams;
 };
 
-export const createQueryParamsForUsers = (query: GetUsersQueryParamsModel): GetUsersQueryParamsModel => {
-  const { pageNumber = 1, pageSize = 10, searchEmailTerm = null, searchLoginTerm = null, sortBy = "createdAt", sortDirection = "desc" } = query;
+export const createQueryParamsForUsers = (query: GetUsersQueryParamsModel): UsersQueryParamsModel => {
+  const { pageNumber = 1, pageSize = 10, sortBy = "createdAt", sortDirection = "desc" } = query;
 
-  const queryParams: GetUsersQueryParamsModel = {
+  const searchEmailTerm = query.searchEmailTerm ?? null;
+  const searchLoginTerm = query.searchLoginTerm ?? null;
+
+  const queryParams: UsersQueryParamsModel = {
     pageNumber: Number(pageNumber),
     pageSize: Number(pageSize),
     searchEmailTerm,

@@ -18,6 +18,7 @@ export const SETTINGS = {
   },
   MONGODB_URI: MONGODB_URI ?? "mongodb://localhost:27017",
   PATH: {
+    AUTH: "/auth",
     BLOGS: "/blogs",
     POSTS: "/posts",
     TESTING: "/testing",

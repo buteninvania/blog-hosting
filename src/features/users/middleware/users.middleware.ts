@@ -4,7 +4,7 @@ import { adminMiddleware } from "@/global-middlewares/admin-middleware";
 import { inputCheckErrorsMiddleware } from "@/global-middlewares/inputCheckErrorsMiddleware";
 import { SETTINGS } from "@/settings";
 import { RequestWithParams } from "@/types";
-import { NextFunction, Request, Response } from "express";
+import { NextFunction, Response } from "express";
 import { body } from "express-validator";
 
 export const loginValidator = body("login")
@@ -34,6 +34,8 @@ export const findUserValidator = async (req: RequestWithParams<UsersURIParamsMod
 
 export const emailValidator = body("email").isString().withMessage("not string").trim().isEmail().withMessage("invalid email");
 
+export const getUserValidators = [adminMiddleware, inputCheckErrorsMiddleware];
+
 export const createUserValidators = [loginValidator, passwordValidator, emailValidator, adminMiddleware, inputCheckErrorsMiddleware];
 
-export const deleteUserValidators = [adminMiddleware, findUserValidator, inputCheckErrorsMiddleware];
+export const deleteUserValidators = [adminMiddleware, inputCheckErrorsMiddleware];

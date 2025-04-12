@@ -21,9 +21,14 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.USERS}`, () => {
     await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
   });
 
-  it("should get empty array and 200", async () => {
-    const res = await req.get(SETTINGS.PATH.USERS).expect(SETTINGS.HTTP_STATUSES.OK);
-
+  it("should get empty array and 401", async () => {
+    await req.get(SETTINGS.PATH.USERS).expect(SETTINGS.HTTP_STATUSES.NO_AUTH);
+  });
+  it("should get empty array and 201", async () => {
+    const res = await req
+      .get(SETTINGS.PATH.USERS)
+      .set({ Authorization: "Basic " + codedAuth })
+      .expect(SETTINGS.HTTP_STATUSES.OK);
     expect(res.body.items.length).toBe(0);
   });
   it("shouldn't create and 401", async () => {
@@ -51,7 +56,10 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.USERS}`, () => {
     expect(response.body.errorsMessages[1].field).toEqual("password");
     expect(response.body.errorsMessages[2].field).toEqual("email");
 
-    const res = await req.get(SETTINGS.PATH.USERS).expect(SETTINGS.HTTP_STATUSES.OK);
+    const res = await req
+      .get(SETTINGS.PATH.USERS)
+      .set({ Authorization: "Basic " + codedAuth })
+      .expect(SETTINGS.HTTP_STATUSES.OK);
 
     expect(res.body.items.length).toBe(0);
   });
@@ -67,8 +75,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.USERS}`, () => {
 
     firstUserCreated = createdEntity;
 
-    const foundUser = await req.get(`${SETTINGS.PATH.USERS}?searchLoginTerm=${firstUserCreated.login}`);
-
+    const foundUser = await req.get(`${SETTINGS.PATH.USERS}?searchLoginTerm=${firstUserCreated.login}`).set({ Authorization: "Basic " + codedAuth });
     expect(createdEntity).toEqual(foundUser.body.items[0]);
   });
   it("should create second user and 201", async () => {
@@ -83,15 +90,15 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.USERS}`, () => {
 
     secondUserCreated = createdEntity;
 
-    const foundUser = await req.get(`${SETTINGS.PATH.USERS}?searchLoginTerm=${secondUserCreated.login}`);
+    const foundUser = await req.get(`${SETTINGS.PATH.USERS}?searchLoginTerm=${secondUserCreated.login}`).set({ Authorization: "Basic " + codedAuth });
     expect(secondUserCreated).toEqual(foundUser.body.items[0]);
     expect(foundUser.body.items[0].login).toEqual(secondUserCreated.login);
 
-    const allUsers = await req.get(SETTINGS.PATH.USERS);
+    const allUsers = await req.get(SETTINGS.PATH.USERS).set({ Authorization: "Basic " + codedAuth });
     expect(allUsers.body.items.length).toEqual(2);
   });
   it("should create 10 users", async () => {
-    for (let i = 0; i < 10; i++) {
+    for (let i = 3; i < 13; i++) {
       const newUser: UsersCreateModel = {
         login: createString(9),
         password: createString(8),
@@ -101,13 +108,26 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.USERS}`, () => {
       await usersTestManager.createUser(newUser, codedAuth);
     }
 
-    const allUsers = await req.get(`${SETTINGS.PATH.USERS}/?pageNumber=2`);
+    const allUsers = await req.get(`${SETTINGS.PATH.USERS}/?pageNumber=2`).set({ Authorization: "Basic " + codedAuth });
     expect(allUsers.body.items.length).toEqual(2);
     expect(allUsers.body.page).toEqual(2);
   });
+
+  it("shouldn't create and 400 if user already exists", async () => {
+    const newUser: UsersCreateModel = {
+      login: "login1",
+      email: "email1@gmail.com",
+      password: "password1",
+    };
+
+    const { response } = await usersTestManager.createUser(newUser, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST);
+    expect(response.body.errorsMessages.length).toEqual(1);
+    expect(response.body.errorsMessages[0].field).toEqual("email");
+  });
+
   it("should delete all users and 204", async () => {
     await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
-    const resultUsers = await req.get(`${SETTINGS.PATH.USERS}`);
+    const resultUsers = await req.get(`${SETTINGS.PATH.USERS}`).set({ Authorization: "Basic " + codedAuth });
     expect(resultUsers.body.items.length).toEqual(0);
   });
 });

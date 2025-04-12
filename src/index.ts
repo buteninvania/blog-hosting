@@ -1,3 +1,5 @@
+import "module-alias/register";
+
 import { app } from "./app";
 import { connectToDB } from "./db/mongo-db";
 import { SETTINGS } from "./settings";

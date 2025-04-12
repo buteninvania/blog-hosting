@@ -1,5 +1,5 @@
-export type BlogsCreateModel = {
-    name: string
-    description: string
-    websiteUrl: string
+export interface BlogsCreateModel {
+  description: string;
+  name: string;
+  websiteUrl: string;
 }

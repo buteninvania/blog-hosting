@@ -1,16 +1,33 @@
 import { userCollection } from "@/db/mongo-db";
-import { UserDbType } from "@/db/user-db-type";
+import { UserDbType, UserViewModel } from "@/db/user-db-type";
 import { GetUsersQueryParamsModel } from "@/features/users/models/GetUsersQueryParamsModel";
 import { UsersCreateModel } from "@/features/users/models/UsersCreateModel";
 import { PaginatedUsersViewModel } from "@/features/users/models/UsersViewModel";
+import { compare, genSaltSync, hashSync } from "bcrypt";
+import { Filter } from "mongodb";
 
 export const usersRepository = {
+  async comparePassword(userId: string, password: string): Promise<boolean> {
+    const user = await userCollection.findOne({ id: userId });
+    if (!user) return false;
+
+    return await compare(password, user.password);
+  },
   async create(user: UsersCreateModel): Promise<string> {
+    const id = new Date().toISOString() + Math.random();
+
+    // const salt = await genSalt(10);
+    // const hashedPassword = await hash(user.password, salt);
+
+    const salt = genSaltSync(10);
+    const hashedPassword = hashSync(user.password, salt);
+
     const newUser: UserDbType = {
       createdAt: new Date().toISOString(),
       email: user.email,
-      id: new Date().toISOString() + Math.random(),
+      id,
       login: user.login,
+      password: hashedPassword,
     };
     await userCollection.insertOne(newUser);
     return newUser.id;
@@ -26,13 +43,31 @@ export const usersRepository = {
     await userCollection.deleteMany({});
     return true;
   },
-  async get(id: string): Promise<null | UserDbType> {
+  async get(id: string): Promise<null | UserViewModel> {
     const user = await userCollection.findOne({ id });
     if (!user) return null;
     return this.map(user);
   },
   async getAll(params: GetUsersQueryParamsModel): Promise<PaginatedUsersViewModel> {
-    const { pageNumber = 1, pageSize = 10, sortBy = "createdAt", sortDirection = "desc" } = params;
+    const { pageNumber = 1, pageSize = 10, searchEmailTerm = null, searchLoginTerm = null, sortBy = "createdAt", sortDirection = "desc" } = params;
+
+    const filter: Filter<UserDbType> = {};
+
+    if (searchEmailTerm || searchLoginTerm) {
+      filter.$or = [];
+
+      if (searchEmailTerm) {
+        filter.$or.push({
+          email: { $options: "i", $regex: searchEmailTerm },
+        });
+      }
+
+      if (searchLoginTerm) {
+        filter.$or.push({
+          login: { $options: "i", $regex: searchLoginTerm },
+        });
+      }
+    }
 
     const sortOptions: Record<string, -1 | 1> = {};
     if (sortBy) {
@@ -41,7 +76,7 @@ export const usersRepository = {
 
     const totalCount = await userCollection.countDocuments();
     const items = await userCollection
-      .find()
+      .find(filter)
       .sort(sortOptions)
       .skip((pageNumber - 1) * pageSize)
       .limit(pageSize)
@@ -57,7 +92,12 @@ export const usersRepository = {
       totalCount,
     };
   },
-  map(user: UserDbType): UserDbType {
+  async getUserByEmail(email: string): Promise<null | UserViewModel> {
+    const user = await userCollection.findOne({ email });
+    if (!user) return null;
+    return this.map(user);
+  },
+  map(user: UserDbType): UserViewModel {
     return {
       createdAt: user.createdAt,
       email: user.email,

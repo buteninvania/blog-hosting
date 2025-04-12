@@ -1,6 +1,8 @@
+import "module-alias/register";
 import cors from "cors";
 import express from "express";
 
+import { authRouter } from "./features/auth/routes/auth.router";
 import { blogsRouter } from "./features/blogs/routes/blogs.router";
 import { postsRouter } from "./features/posts/routes/posts.router";
 import { testRouter } from "./features/testing/routes/test.router";
@@ -18,4 +20,5 @@ app.get("/", (req, res) => {
 app.use(SETTINGS.PATH.BLOGS, blogsRouter);
 app.use(SETTINGS.PATH.POSTS, postsRouter);
 app.use(SETTINGS.PATH.USERS, usersRouter);
+app.use(SETTINGS.PATH.AUTH, authRouter);
 app.use(SETTINGS.PATH.TESTING, testRouter);

@@ -1,5 +1,6 @@
-import { createUserValidators } from "@/features/users/middleware/users.middleware";
+import { createUserValidators, getUserValidators } from "@/features/users/middleware/users.middleware";
 import { userServices } from "@/features/users/service/users.service";
+import { fromUTF8ToBase64 } from "@/global-middlewares/admin-middleware";
 import { SETTINGS } from "@/settings";
 import { RequestWithBody, RequestWithParams, RequestWithQuery } from "@/types";
 import { createQueryParamsForUsers } from "@/utils";
@@ -15,19 +16,49 @@ export const usersRouter = Router();
 
 const userController = {
   createUserController: async (req: RequestWithBody<UsersCreateModel>, res: Response<OutputErrorsType | UsersViewModel>) => {
-    const user = await userServices.createUser(req.body);
-    user ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(user) : res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST);
+    try {
+      const user = await userServices.createUser(req.body);
+      if (!user) return res.status(SETTINGS.HTTP_STATUSES.BAD_REQUEST).send();
+      return res.status(SETTINGS.HTTP_STATUSES.CREATED).json(user);
+    } catch (e) {
+      const errorsMessages = [{ field: "email", message: "email should be unique" }];
+      return res.status(400).json({ errorsMessages });
+    }
   },
   deleteUserController: async (req: RequestWithParams<UsersURIParamsModel>, res: Response) => {
-    (await userServices.deleteUser(req.params.id))
-      ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
-      : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    // TODO: Refactoring is needed
+    const auth = req.headers.authorization!;
+
+    if (!auth) {
+      res.status(401).json({});
+      return;
+    }
+
+    if (!auth.startsWith("Basic ")) {
+      res.status(401).json({});
+      return;
+    }
+
+    const codedAuth = fromUTF8ToBase64(SETTINGS.ADMIN);
+
+    if (auth.slice(6) !== codedAuth) {
+      res.status(401).json({});
+      return;
+    }
+
+    const foundValidator = await userServices.getUser(req.params.id);
+    if (!foundValidator) return res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+
+    const isDeleted = await userServices.deleteUser(req.params.id);
+    if (!isDeleted) return res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    return res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT);
   },
-  getUsersController: async (req: RequestWithQuery<GetUsersQueryParamsModel>, res: Response<PaginatedUsersViewModel>) => {
-    return res.status(SETTINGS.HTTP_STATUSES.OK).json(await userServices.getUsers(createQueryParamsForUsers(req.query)));
+  getUsersController: async (req: RequestWithQuery<GetUsersQueryParamsModel>, res: Response<OutputErrorsType | PaginatedUsersViewModel>) => {
+    const users = await userServices.getUsers(createQueryParamsForUsers(req.query));
+    return res.status(SETTINGS.HTTP_STATUSES.OK).json(users);
   },
 };
 
-usersRouter.get("/", userController.getUsersController);
-usersRouter.post("/", ...createUserValidators, userController.createUserController);
+usersRouter.get("/", getUserValidators, userController.getUsersController);
+usersRouter.post("/", createUserValidators, userController.createUserController);
 usersRouter.delete("/:id", userController.deleteUserController);
