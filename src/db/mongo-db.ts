@@ -1,9 +1,9 @@
-import { UserDbType } from "@/db/user-db-type";
-import { SETTINGS } from "@/settings";
 import { Collection, Db, MongoClient } from "mongodb";
 
+import { SETTINGS } from "../settings";
 import { BlogDbType } from "./blog-db-type";
 import { PostDbType } from "./post-db-type";
+import { UserDbType } from "./user-db-type";
 
 const client: MongoClient = new MongoClient(SETTINGS.MONGODB_URI);
 export const db: Db = client.db(SETTINGS.DB_NAME);

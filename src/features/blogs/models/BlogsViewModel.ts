@@ -1,16 +1,16 @@
-export type BlogsViewModel = {
-    id: string
-    name: string
-    description: string
-    websiteUrl: string
-    createdAt: string
-    isMembership: boolean
+export interface BlogsViewModel {
+  createdAt: string;
+  description: string;
+  id: string;
+  isMembership: boolean;
+  name: string;
+  websiteUrl: string;
 }
 
-export type PaginatedBlogsViewModel = {
-    pagesCount: number
-    page: number
-    pageSize: number
-    totalCount: number
-    items: BlogsViewModel[]
+export interface PaginatedBlogsViewModel {
+  items: BlogsViewModel[];
+  page: number;
+  pagesCount: number;
+  pageSize: number;
+  totalCount: number;
 }

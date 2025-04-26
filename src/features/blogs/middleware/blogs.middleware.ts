@@ -1,10 +1,10 @@
-import { adminMiddleware } from "@/global-middlewares/admin-middleware";
-import { inputCheckErrorsMiddleware } from "@/global-middlewares/inputCheckErrorsMiddleware";
-import { SETTINGS } from "@/settings";
 import { NextFunction, Request, Response } from "express";
 import { body } from "express-validator";
 
+import { adminMiddleware } from "../../../global-middlewares/admin-middleware";
+import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
 import { blogsRepository as blogsRepositoryMongo } from "../../../repository/mongo-db-blogs-repository";
+import { SETTINGS } from "../../../settings";
 import { contentValidator, shortDescriptionValidator, titleValidator } from "../../posts/middleware/posts.middleware";
 
 export const nameValidator = body("name").isString().withMessage("not string").trim().isLength({ max: 15, min: 1 }).withMessage("more then 15 or 0");

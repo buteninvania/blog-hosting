@@ -1,16 +1,16 @@
-import { createUserValidators, getUserValidators } from "@/features/users/middleware/users.middleware";
-import { userServices } from "@/features/users/service/users.service";
-import { fromUTF8ToBase64 } from "@/global-middlewares/admin-middleware";
-import { SETTINGS } from "@/settings";
-import { RequestWithBody, RequestWithParams, RequestWithQuery } from "@/types";
-import { createQueryParamsForUsers } from "@/utils";
 import { Response, Router } from "express";
 
+import { fromUTF8ToBase64 } from "../../../global-middlewares/admin-middleware";
+import { SETTINGS } from "../../../settings";
+import { RequestWithBody, RequestWithParams, RequestWithQuery } from "../../../types";
+import { createQueryParamsForUsers } from "../../../utils";
 import { OutputErrorsType } from "../../types/output-errors-type";
+import { createUserValidators, getUserValidators } from "../middleware/users.middleware";
 import { GetUsersQueryParamsModel } from "../models/GetUsersQueryParamsModel";
 import { UsersCreateModel } from "../models/UsersCreateModel";
 import { UsersURIParamsModel } from "../models/UsersURIParamsModel";
 import { PaginatedUsersViewModel, UsersViewModel } from "../models/UsersViewModel";
+import { userServices } from "../service/users.service";
 
 export const usersRouter = Router();
 

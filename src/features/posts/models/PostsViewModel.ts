@@ -1,9 +1,9 @@
-export type PostsViewModel = {
-    id: string
-    title: string
-    shortDescription: string
-    content: string
-    blogId: string
-    blogName: string
-    createdAt: string
+export interface PostsViewModel {
+  blogId: string;
+  blogName: string;
+  content: string;
+  createdAt: string;
+  id: string;
+  shortDescription: string;
+  title: string;
 }

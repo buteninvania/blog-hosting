@@ -1,5 +1,5 @@
-export type BlogsUpdateModel = {
-    name: string
-    description: string
-    websiteUrl: string
+export interface BlogsUpdateModel {
+  description: string;
+  name: string;
+  websiteUrl: string;
 }

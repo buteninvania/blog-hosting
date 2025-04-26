@@ -1,6 +1,6 @@
-export type PostsCreateModel = {
-    title: string
-    shortDescription: string
-    content: string
-    blogId: string
+export interface PostsCreateModel {
+  blogId: string;
+  content: string;
+  shortDescription: string;
+  title: string;
 }

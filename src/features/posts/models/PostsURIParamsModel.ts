@@ -1,3 +1,3 @@
-export type PostsURIParamsModel = {
-    id: string
+export interface PostsURIParamsModel {
+  id: string;
 }

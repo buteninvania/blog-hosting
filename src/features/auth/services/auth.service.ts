@@ -1,7 +1,7 @@
-import { LoginInputModel } from "@/features/auth/models/LoginInputModel";
-import { GetUsersQueryParamsModel } from "@/features/users/models/GetUsersQueryParamsModel";
-import { usersRepository } from "@/repository/mongo-db-users-repository";
-import { createQueryParamsForUsers } from "@/utils";
+import { usersRepository } from "../../../repository/mongo-db-users-repository";
+import { createQueryParamsForUsers } from "../../../utils";
+import { GetUsersQueryParamsModel } from "../../users/models/GetUsersQueryParamsModel";
+import { LoginInputModel } from "../models/LoginInputModel";
 
 export const authService = {
   login: async (loginData: LoginInputModel): Promise<boolean> => {

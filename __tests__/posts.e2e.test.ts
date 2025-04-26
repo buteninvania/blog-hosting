@@ -1,293 +1,279 @@
-import {req} from "./test.helpers";
-import {SETTINGS} from "../src/settings";
-import {PostDbType} from "../src/db/post-db-type";
-import {PostsCreateModel} from "../src/features/posts/models/PostsCreateModel";
-import {codedAuth, createString} from "./utils/datasets";
-import {postsTestManager} from "./utils/postsTestManager";
-import {BlogsCreateModel} from "../src/features/blogs/models/BlogsCreateModel";
-import {blogsTestManager} from "./utils/blogsTestManager";
-import {BlogDbType} from "../src/db/blog-db-type";
-import {BlogsViewModel} from "../src/features/blogs/models/BlogsViewModel";
-import {PostsViewModel} from "../src/features/posts/models/PostsViewModel";
+import { req } from "./test.helpers";
+import { SETTINGS } from "../src/settings";
+import { PostDbType } from "../src/db/post-db-type";
+import { PostsCreateModel } from "../src/features/posts/models/PostsCreateModel";
+import { codedAuth, createString } from "./utils/datasets";
+import { postsTestManager } from "./utils/postsTestManager";
+import { BlogsCreateModel } from "../src/features/blogs/models/BlogsCreateModel";
+import { blogsTestManager } from "./utils/blogsTestManager";
+import { BlogDbType } from "../src/db/blog-db-type";
+import { PostsViewModel } from "../src/features/posts/models/PostsViewModel";
 
 describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
-    let firstBlogCreated: BlogDbType
-    let secondBlogCreated: BlogDbType
+  let firstBlogCreated: BlogDbType;
+  let secondBlogCreated: BlogDbType;
 
-    let firstPostCreated: PostDbType
-    let secondPostCreated: PostDbType
+  let firstPostCreated: PostDbType;
+  let secondPostCreated: PostDbType;
 
-    beforeAll(async () => {
-        await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
-    })
+  beforeAll(async () => {
+    await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
+  });
 
-    it('should get empty array and 200', async () => {
-        const res = await req
-            .get(SETTINGS.PATH.POSTS)
-            .expect(SETTINGS.HTTP_STATUSES.OK)
+  it("should get empty array and 200", async () => {
+    const res = await req.get(SETTINGS.PATH.POSTS).expect(SETTINGS.HTTP_STATUSES.OK);
 
-        expect(res.body.items.length).toBe(0)
-    })
-    it('shouldn\'t find and 404', async () => {
-        await req
-            .get(`${SETTINGS.PATH.POSTS}/1`)
-            .expect(SETTINGS.HTTP_STATUSES.NOT_FOUND)
+    expect(res.body.items.length).toBe(0);
+  });
+  it("shouldn't find and 404", async () => {
+    await req.get(`${SETTINGS.PATH.POSTS}/1`).expect(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+  });
+  it("shouldn't create and 401", async () => {
+    const newPost: PostsCreateModel = {
+      title: "p1",
+      content: "c1",
+      shortDescription: "s1",
+      blogId: "1",
+    };
 
-    })
-    it('shouldn\'t create and 401', async () => {
-        const newPost: PostsCreateModel = {
-            title: 'p1',
-            content: 'c1',
-            shortDescription: 's1',
-            blogId: '1'
-        }
+    const { response } = await postsTestManager.createPost(newPost, null, SETTINGS.HTTP_STATUSES.NO_AUTH);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_AUTH);
+  });
+  it("shouldn't create and 400", async () => {
+    const newPost: PostsCreateModel = {
+      title: createString(31),
+      content: createString(1001),
+      shortDescription: createString(101),
+      blogId: "1",
+    };
 
-        const {response} = await postsTestManager.createPost(newPost, null, SETTINGS.HTTP_STATUSES.NO_AUTH)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_AUTH)
-    })
-    it('shouldn\'t create and 400', async () => {
-        const newPost: PostsCreateModel = {
-            title: createString(31),
-            content: createString(1001),
-            shortDescription: createString(101),
-            blogId: '1'
-        }
+    const { response } = await postsTestManager.createPost(newPost, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST);
 
-        const {response} = await postsTestManager.createPost(newPost, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
+    expect(response.body.errorsMessages.length).toEqual(4);
+    expect(response.body.errorsMessages[0].field).toEqual("title");
+    expect(response.body.errorsMessages[1].field).toEqual("shortDescription");
+    expect(response.body.errorsMessages[2].field).toEqual("content");
+    expect(response.body.errorsMessages[3].field).toEqual("blogId");
 
-        expect(response.body.errorsMessages.length).toEqual(4)
-        expect(response.body.errorsMessages[0].field).toEqual('title')
-        expect(response.body.errorsMessages[1].field).toEqual('shortDescription')
-        expect(response.body.errorsMessages[2].field).toEqual('content')
-        expect(response.body.errorsMessages[3].field).toEqual('blogId')
+    const res = await req.get(SETTINGS.PATH.POSTS).expect(SETTINGS.HTTP_STATUSES.OK);
 
-        const res = await req
-            .get(SETTINGS.PATH.POSTS)
-            .expect(SETTINGS.HTTP_STATUSES.OK)
+    expect(res.body.items.length).toBe(0);
+  });
+  it("should create first blog and 201", async () => {
+    const newBlog: BlogsCreateModel = {
+      name: "n1",
+      description: "d1",
+      websiteUrl: "http://some.com",
+    };
 
-        expect(res.body.items.length).toBe(0)
-    })
-    it('should create first blog and 201', async () => {
-        const newBlog: BlogsCreateModel = {
-            name: "n1",
-            description: "d1",
-            websiteUrl: "http://some.com"
-        }
+    const { response, createdEntity } = await blogsTestManager.createBlog(newBlog, codedAuth);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
 
-        const {response, createdEntity} = await blogsTestManager.createBlog(newBlog, codedAuth)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+    firstBlogCreated = createdEntity;
 
-        firstBlogCreated = createdEntity
+    const foundBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${createdEntity.id}`);
+    expect(createdEntity).toEqual(foundBlog.body);
+  });
+  it("should create first post and 201", async () => {
+    const newPost: PostsCreateModel = {
+      title: "p1",
+      content: "c1",
+      shortDescription: "s1",
+      blogId: firstBlogCreated.id,
+    };
 
-        const foundBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${createdEntity.id}`)
-        expect(createdEntity).toEqual(foundBlog.body)
-    })
-    it('should create first post and 201', async () => {
-        const newPost: PostsCreateModel = {
-            title: 'p1',
-            content: 'c1',
-            shortDescription: 's1',
-            blogId: firstBlogCreated.id
-        }
+    const { response, createdEntity } = await postsTestManager.createPost(newPost, codedAuth);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
 
-        const {response, createdEntity} = await postsTestManager.createPost(newPost, codedAuth)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+    firstPostCreated = createdEntity;
 
-        firstPostCreated = createdEntity
+    const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`);
+    expect(firstPostCreated).toEqual(foundPost.body);
+    expect(foundPost.body.blogName).toEqual(firstBlogCreated.name);
+  });
+  it("should create second blog and 201", async () => {
+    const newBlog: BlogsCreateModel = {
+      name: "n2",
+      description: "d2",
+      websiteUrl: "http://some.com",
+    };
 
-        const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`)
-        expect(firstPostCreated).toEqual(foundPost.body)
-        expect(foundPost.body.blogName).toEqual(firstBlogCreated.name)
-    })
-    it('should create second blog and 201', async () => {
-        const newBlog: BlogsCreateModel = {
-            name: "n2",
-            description: "d2",
-            websiteUrl: "http://some.com"
-        }
+    const { response, createdEntity } = await blogsTestManager.createBlog(newBlog, codedAuth);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
 
-        const {response, createdEntity} = await blogsTestManager.createBlog(newBlog, codedAuth)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+    secondBlogCreated = createdEntity;
 
-        secondBlogCreated = createdEntity
+    const foundBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${secondBlogCreated.id}`);
+    expect(secondBlogCreated).toEqual(foundBlog.body);
+  });
+  it("should create second post and 201", async () => {
+    const newPost: PostsCreateModel = {
+      title: "p2",
+      content: "c2",
+      shortDescription: "s2",
+      blogId: secondBlogCreated.id,
+    };
 
-        const foundBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${secondBlogCreated.id}`)
-        expect(secondBlogCreated).toEqual(foundBlog.body)
-    })
-    it('should create second post and 201', async () => {
-        const newPost: PostsCreateModel = {
-            title: 'p2',
-            content: 'c2',
-            shortDescription: 's2',
-            blogId: secondBlogCreated.id
-        }
+    const { response, createdEntity } = await postsTestManager.createPost(newPost, codedAuth);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
 
-        const {response, createdEntity} = await postsTestManager.createPost(newPost, codedAuth)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+    secondPostCreated = createdEntity;
 
-        secondPostCreated = createdEntity
+    const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${secondPostCreated.id}`);
+    expect(secondPostCreated).toEqual(foundPost.body);
+    expect(foundPost.body.blogName).toEqual(secondBlogCreated.name);
 
-        const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${secondPostCreated.id}`)
-        expect(secondPostCreated).toEqual(foundPost.body)
-        expect(foundPost.body.blogName).toEqual(secondBlogCreated.name)
+    const allPosts = await req.get(SETTINGS.PATH.POSTS);
 
-        const allPosts = await req.get(SETTINGS.PATH.POSTS)
+    expect(allPosts.body.items.length).toEqual(2);
 
-        expect(allPosts.body.items.length).toEqual(2)
+    const allBlogs = await req.get(SETTINGS.PATH.BLOGS);
+    expect(allBlogs.body.items.length).toEqual(2);
+  });
+  it("should update first post and 204", async () => {
+    const data = {
+      title: "edit p1",
+      content: "c1",
+      shortDescription: "s1",
+      blogId: firstBlogCreated.id,
+    };
+    const { response } = await postsTestManager.updatePost(data, firstPostCreated.id, codedAuth);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_CONTENT);
 
-        const allBlogs = await req.get(SETTINGS.PATH.BLOGS)
-        expect(allBlogs.body.items.length).toEqual(2)
-    })
-    it('should update first post and 204', async () => {
-        const data = {
-            title: 'edit p1',
-            content: 'c1',
-            shortDescription: 's1',
-            blogId: firstBlogCreated.id
-        }
-        const {response} = await postsTestManager.updatePost(data, firstPostCreated.id, codedAuth)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_CONTENT)
+    const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`);
+    firstPostCreated = foundPost.body;
+    expect(firstPostCreated.title).toEqual(data.title);
+  });
+  it("shouldn't update and 404", async () => {
+    const data = {
+      title: "edit p1",
+      content: "c1",
+      shortDescription: "s1",
+      blogId: firstBlogCreated.id,
+    };
+    const { response } = await postsTestManager.updatePost(data, "404", codedAuth, SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+  });
+  it("shouldn't update and 400", async () => {
+    const data = {
+      title: createString(31),
+      content: createString(1001),
+      shortDescription: createString(101),
+      blogId: "1",
+    };
 
-        const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`)
-        firstPostCreated = foundPost.body
-        expect(firstPostCreated.title).toEqual(data.title)
-    })
-    it('shouldn\'t update and 404', async () => {
-        const data = {
-            title: 'edit p1',
-            content: 'c1',
-            shortDescription: 's1',
-            blogId: firstBlogCreated.id
-        }
-        const {response} = await postsTestManager.updatePost(data, "404", codedAuth, SETTINGS.HTTP_STATUSES.NOT_FOUND)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NOT_FOUND)
-    })
-    it('shouldn\'t update and 400', async () => {
-        const data = {
-            title: createString(31),
-            content: createString(1001),
-            shortDescription: createString(101),
-            blogId: '1'
-        }
+    const { response } = await postsTestManager.updatePost(data, firstPostCreated.id, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST);
 
-        const {response} = await postsTestManager.updatePost(data, firstPostCreated.id, codedAuth, SETTINGS.HTTP_STATUSES.BAD_REQUEST)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST)
+    expect(response.body.errorsMessages.length).toEqual(4);
+    expect(response.body.errorsMessages[0].field).toEqual("title");
+    expect(response.body.errorsMessages[1].field).toEqual("shortDescription");
+    expect(response.body.errorsMessages[2].field).toEqual("content");
+    expect(response.body.errorsMessages[3].field).toEqual("blogId");
 
-        expect(response.body.errorsMessages.length).toEqual(4)
-        expect(response.body.errorsMessages[0].field).toEqual('title')
-        expect(response.body.errorsMessages[1].field).toEqual('shortDescription')
-        expect(response.body.errorsMessages[2].field).toEqual('content')
-        expect(response.body.errorsMessages[3].field).toEqual('blogId')
+    const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`);
+    expect(firstPostCreated).toEqual(foundPost.body);
+  });
+  it("shouldn't update and 401", async () => {
+    const data = {
+      title: createString(29),
+      content: createString(999),
+      shortDescription: createString(99),
+      blogId: firstBlogCreated.id,
+    };
 
-        const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`)
-        expect(firstPostCreated).toEqual(foundPost.body)
-    })
-    it('shouldn\'t update and 401', async () => {
-        const data = {
-            title: createString(29),
-            content: createString(999),
-            shortDescription: createString(99),
-            blogId: firstBlogCreated.id
-        }
+    const { response } = await postsTestManager.updatePost(data, firstPostCreated.id, null, SETTINGS.HTTP_STATUSES.NO_AUTH);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_AUTH);
 
-        const {response} = await postsTestManager.updatePost(data, firstPostCreated.id, null, SETTINGS.HTTP_STATUSES.NO_AUTH)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_AUTH)
+    const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`);
+    expect(firstPostCreated).toEqual(foundPost.body);
+  });
+  it("should create 100 posts and return the posts of the second country", async () => {
+    for (let i = 0; i < 100; i++) {
+      const newPost: PostsCreateModel = {
+        title: "p" + i,
+        content: "c" + i,
+        shortDescription: "s" + i,
+        blogId: secondBlogCreated.id,
+      };
 
-        const foundPost = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}`)
-        expect(firstPostCreated).toEqual(foundPost.body)
-    })
-    it('should create 100 posts and return the posts of the second country', async () => {
-        for (let i = 0; i < 100; i++) {
-            const newPost: PostsCreateModel = {
-                title: 'p' + i,
-                content: 'c' + i,
-                shortDescription: 's' + i,
-                blogId: secondBlogCreated.id
-            }
+      await postsTestManager.createPost(newPost, codedAuth);
+    }
 
-            await postsTestManager.createPost(newPost, codedAuth)
-        }
+    const allPosts = await req.get(`${SETTINGS.PATH.POSTS}/?pageNumber=2`);
+    expect(allPosts.body.items.length).toEqual(10);
+    expect(allPosts.body.page).toEqual(2);
+  });
+  it("should delete all posts and 204", async () => {
+    await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
+    const resultPosts = await req.get(`${SETTINGS.PATH.POSTS}`);
+    expect(resultPosts.body.items.length).toEqual(0);
+  });
+  it("should return posts sorted by createdAt desc by default", async () => {
+    const newBlog: BlogsCreateModel = {
+      name: "n2",
+      description: "d2",
+      websiteUrl: "http://some.com",
+    };
 
-        const allPosts = await req.get(`${SETTINGS.PATH.POSTS}/?pageNumber=2`)
-        expect(allPosts.body.items.length).toEqual(10)
-        expect(allPosts.body.page).toEqual(2)
-    })
-    it('should delete all posts and 204', async () => {
-        await req.delete(`${SETTINGS.PATH.TESTING}/all-data`);
-        const resultPosts = await req.get(`${SETTINGS.PATH.POSTS}`)
-        expect(resultPosts.body.items.length).toEqual(0)
-    })
-    it('should return posts sorted by createdAt desc by default', async () => {
-        const newBlog: BlogsCreateModel = {
-            name: "n2",
-            description: "d2",
-            websiteUrl: "http://some.com"
-        }
+    const { response, createdEntity } = await blogsTestManager.createBlog(newBlog, codedAuth);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
 
-        const {response, createdEntity} = await blogsTestManager.createBlog(newBlog, codedAuth)
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED)
+    firstBlogCreated = createdEntity;
 
-        firstBlogCreated = createdEntity
+    const foundBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}`);
+    expect(firstBlogCreated).toEqual(foundBlog.body);
+    const newPostCreator = (): PostsCreateModel => {
+      const dateTimeString = new Date().getTime().toString();
+      return {
+        title: `t${dateTimeString}`,
+        shortDescription: `sd${dateTimeString}`,
+        content: `c${dateTimeString}`,
+        blogId: firstBlogCreated.id,
+      };
+    };
 
-        const foundBlog = await req.get(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}`)
-        expect(firstBlogCreated).toEqual(foundBlog.body)
-        const newPostCreator = (): PostsCreateModel => {
-            const dateTimeString = new Date().getTime().toString();
-            return {
-                title: `t${dateTimeString}`,
-                shortDescription: `sd${dateTimeString}`,
-                content: `c${dateTimeString}`,
-                blogId: firstBlogCreated.id
-            }
-        }
+    await postsTestManager.createPost(newPostCreator(), codedAuth);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await postsTestManager.createPost(newPostCreator(), codedAuth);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    await postsTestManager.createPost(newPostCreator(), codedAuth);
+    await new Promise((resolve) => setTimeout(resolve, 10));
 
-        await postsTestManager.createPost(newPostCreator(), codedAuth)
-        await new Promise(resolve => setTimeout(resolve, 10));
-        await postsTestManager.createPost(newPostCreator(), codedAuth)
-        await new Promise(resolve => setTimeout(resolve, 10));
-        await postsTestManager.createPost(newPostCreator(), codedAuth)
-        await new Promise(resolve => setTimeout(resolve, 10));
+    const resultPosts = await req.get(`${SETTINGS.PATH.POSTS}`);
+    const posts = resultPosts.body.items;
 
-        const resultPosts = await req.get(`${SETTINGS.PATH.POSTS}`)
-        const posts = resultPosts.body.items;
+    expect(posts.length).toBe(3);
+    const dates = posts.map((post: PostsViewModel) => new Date(post.createdAt).toISOString());
+    const sortedDates = [...dates].sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
-        expect(posts.length).toBe(3);
-        const dates = posts.map((post: PostsViewModel)  => new Date(post.createdAt).toISOString());
-        const sortedDates = [...dates].sort((a, b) =>
-            new Date(b).getTime() - new Date(a).getTime());
+    expect(dates).toEqual(sortedDates);
+  });
+  it("should return posts sorted by createdAt asc when specified", async () => {
+    const response = await req.get(`${SETTINGS.PATH.POSTS}?sortBy=createdAt&sortDirection=asc`);
 
-        expect(dates).toEqual(sortedDates);
-    })
-    it('should return posts sorted by createdAt asc when specified', async () => {
-        const response = await req.get(
-            `${SETTINGS.PATH.POSTS}?sortBy=createdAt&sortDirection=asc`
-        );
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
 
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+    const posts = response.body.items;
+    expect(posts.length).toBe(3);
 
-        const posts = response.body.items;
-        expect(posts.length).toBe(3);
+    const dates = posts.map((post: PostsViewModel) => new Date(post.createdAt).toISOString());
+    const sortedDates = [...dates].sort((a, b) => new Date(a).getTime() - new Date(b).getTime());
 
-        const dates = posts.map((post: PostsViewModel) => new Date(post.createdAt).toISOString());
-        const sortedDates = [...dates].sort((a, b) =>
-            new Date(a).getTime() - new Date(b).getTime());
+    expect(dates).toEqual(sortedDates);
+  });
+  it("should return posts sorted by name desc when specified", async () => {
+    const response = await req.get(`${SETTINGS.PATH.POSTS}?sortBy=title&sortDirection=desc`);
 
-        expect(dates).toEqual(sortedDates);
-    });
-    it('should return posts sorted by name desc when specified', async () => {
-        const response = await req.get(
-            `${SETTINGS.PATH.POSTS}?sortBy=title&sortDirection=desc`
-        );
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
 
-        expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+    const posts = response.body.items;
+    expect(posts.length).toBe(3);
 
-        const posts = response.body.items;
-        expect(posts.length).toBe(3);
+    const titles = posts.map((post: PostsViewModel) => post.title);
+    const sortedNames = [...titles].sort((a, b) => b.localeCompare(a));
 
-        const titles = posts.map((post: PostsViewModel) => post.title);
-        const sortedNames = [...titles].sort((a, b) => b.localeCompare(a));
-
-        expect(titles).toEqual(sortedNames);
-    });
-})
+    expect(titles).toEqual(sortedNames);
+  });
+});

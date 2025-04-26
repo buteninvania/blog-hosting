@@ -1,7 +1,6 @@
-import { GetUsersQueryParamsModel, UsersQueryParamsModel } from "@/features/users/models/GetUsersQueryParamsModel";
-
 import { GetBlogsQueryParamsModel } from "./features/blogs/models/GetBlogsQueryParamsModel";
 import { GetPostsQueryParamsModel } from "./features/posts/models/GetPostsQueryParamsModel";
+import { GetUsersQueryParamsModel, UsersQueryParamsModel } from "./features/users/models/GetUsersQueryParamsModel";
 
 export const createQueryParamsForBlogs = (query: GetBlogsQueryParamsModel): GetBlogsQueryParamsModel => {
   const { pageNumber = 1, pageSize = 10, searchNameTerm, sortBy = "createdAt", sortDirection = "desc" } = query;

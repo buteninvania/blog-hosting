@@ -1,9 +1,10 @@
-import { BlogDbType } from "@/db/blog-db-type";
-import { blogCollection } from "@/db/mongo-db";
-import { BlogsCreateModel } from "@/features/blogs/models/BlogsCreateModel";
-import { BlogsViewModel, PaginatedBlogsViewModel } from "@/features/blogs/models/BlogsViewModel";
-import { GetBlogsQueryParamsModel } from "@/features/blogs/models/GetBlogsQueryParamsModel";
 import { Filter, WithId } from "mongodb";
+
+import { BlogDbType } from "../db/blog-db-type";
+import { blogCollection } from "../db/mongo-db";
+import { BlogsCreateModel } from "../features/blogs/models/BlogsCreateModel";
+import { BlogsViewModel, PaginatedBlogsViewModel } from "../features/blogs/models/BlogsViewModel";
+import { GetBlogsQueryParamsModel } from "../features/blogs/models/GetBlogsQueryParamsModel";
 
 export const blogsRepository = {
   async create(blog: BlogsCreateModel): Promise<string> {

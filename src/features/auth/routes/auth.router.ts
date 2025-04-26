@@ -1,9 +1,10 @@
-import { loginValidators } from "@/features/auth/middleware/auth.middleware";
-import { LoginInputModel } from "@/features/auth/models/LoginInputModel";
-import { authService } from "@/features/auth/services/auth.service";
-import { SETTINGS } from "@/settings";
-import { RequestWithBody } from "@/types";
 import { Response, Router } from "express";
+
+import { SETTINGS } from "../../../settings";
+import { RequestWithBody } from "../../../types";
+import { loginValidators } from "../middleware/auth.middleware";
+import { LoginInputModel } from "../models/LoginInputModel";
+import { authService } from "../services/auth.service";
 
 export const authRouter = Router();
 

@@ -1,10 +1,11 @@
-import { userCollection } from "@/db/mongo-db";
-import { UserDbType, UserViewModel } from "@/db/user-db-type";
-import { GetUsersQueryParamsModel } from "@/features/users/models/GetUsersQueryParamsModel";
-import { UsersCreateModel } from "@/features/users/models/UsersCreateModel";
-import { PaginatedUsersViewModel } from "@/features/users/models/UsersViewModel";
 import { compare, genSaltSync, hashSync } from "bcrypt";
 import { Filter } from "mongodb";
+
+import { userCollection } from "../db/mongo-db";
+import { UserDbType, UserViewModel } from "../db/user-db-type";
+import { GetUsersQueryParamsModel } from "../features/users/models/GetUsersQueryParamsModel";
+import { UsersCreateModel } from "../features/users/models/UsersCreateModel";
+import { PaginatedUsersViewModel } from "../features/users/models/UsersViewModel";
 
 export const usersRepository = {
   async comparePassword(userId: string, password: string): Promise<boolean> {
@@ -74,7 +75,7 @@ export const usersRepository = {
       sortOptions[sortBy] = sortDirection === "asc" ? 1 : -1;
     }
 
-    const totalCount = await userCollection.countDocuments();
+    const totalCount = await userCollection.countDocuments(filter);
     const items = await userCollection
       .find(filter)
       .sort(sortOptions)

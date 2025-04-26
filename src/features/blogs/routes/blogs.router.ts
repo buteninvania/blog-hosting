@@ -1,9 +1,9 @@
-import { PaginatedPostsViewModel } from "@/db/post-db-type";
-import { SETTINGS } from "@/settings";
-import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithParamsAndQuery, RequestWithQuery } from "@/types";
-import { createQueryParamsForBlogs, createQueryParamsForPosts } from "@/utils";
 import { Response, Router } from "express";
 
+import { PaginatedPostsViewModel } from "../../../db/post-db-type";
+import { SETTINGS } from "../../../settings";
+import { RequestWithBody, RequestWithParams, RequestWithParamsAndBody, RequestWithParamsAndQuery, RequestWithQuery } from "../../../types";
+import { createQueryParamsForBlogs, createQueryParamsForPosts } from "../../../utils";
 import { GetPostsQueryParamsModel } from "../../posts/models/GetPostsQueryParamsModel";
 import { PostsViewModel } from "../../posts/models/PostsViewModel";
 import { postServices } from "../../posts/service/posts.service";
@@ -71,7 +71,7 @@ const blogController = {
 blogsRouter.get("/", blogController.getBlogsController);
 blogsRouter.get("/:id", blogController.getBlogController);
 blogsRouter.post("/", ...createBlogValidators, blogController.createBlogController);
-blogsRouter.put("/:id", ...updateBlogValidators, blogController.updateBlogController);
-blogsRouter.delete("/:id", ...deleteBlogValidators, blogController.deleteBlogController);
+blogsRouter.put("/:id", updateBlogValidators, blogController.updateBlogController);
+blogsRouter.delete("/:id", deleteBlogValidators, blogController.deleteBlogController);
 blogsRouter.get("/:blogId/posts", blogController.getPostsByBlogIdController);
-blogsRouter.post("/:blogId/posts", ...createPostByBlogIdValidators, blogController.createPostByBlogIdController);
+blogsRouter.post("/:blogId/posts", createPostByBlogIdValidators, blogController.createPostByBlogIdController);

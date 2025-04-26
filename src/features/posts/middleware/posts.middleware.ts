@@ -1,10 +1,11 @@
-import { blogServices } from "@/features/blogs/services/blogs.service";
-import { postServices } from "@/features/posts/service/posts.service";
-import { adminMiddleware } from "@/global-middlewares/admin-middleware";
-import { inputCheckErrorsMiddleware } from "@/global-middlewares/inputCheckErrorsMiddleware";
-import { SETTINGS } from "@/settings";
 import { NextFunction, Request, Response } from "express";
 import { body } from "express-validator";
+
+import { adminMiddleware } from "../../../global-middlewares/admin-middleware";
+import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
+import { SETTINGS } from "../../../settings";
+import { blogServices } from "../../blogs/services/blogs.service";
+import { postServices } from "../service/posts.service";
 
 export const titleValidator = body("title")
   .isString()

@@ -1,6 +1,4 @@
-import { PaginatedUsersViewModel } from "@/db/user-db-type";
-import { usersRepository } from "@/repository/mongo-db-users-repository";
-
+import { usersRepository } from "../../../repository/mongo-db-users-repository";
 import { GetUsersQueryParamsModel } from "../models/GetUsersQueryParamsModel";
 import { UsersCreateModel } from "../models/UsersCreateModel";
 

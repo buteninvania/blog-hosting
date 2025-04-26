@@ -1,8 +1,9 @@
-import { blogsRepository } from "@/repository/mongo-db-blogs-repository";
-import { postsRepository } from "@/repository/mongo-db-posts-repository";
-import { usersRepository } from "@/repository/mongo-db-users-repository";
-import { SETTINGS } from "@/settings";
 import { Request, Response, Router } from "express";
+
+import { blogsRepository } from "../../../repository/mongo-db-blogs-repository";
+import { postsRepository } from "../../../repository/mongo-db-posts-repository";
+import { usersRepository } from "../../../repository/mongo-db-users-repository";
+import { SETTINGS } from "../../../settings";
 
 export const testRouter = Router();
 

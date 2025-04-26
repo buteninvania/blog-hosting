@@ -1,11 +1,12 @@
-import { UsersURIParamsModel } from "@/features/users/models/UsersURIParamsModel";
-import { userServices } from "@/features/users/service/users.service";
-import { adminMiddleware } from "@/global-middlewares/admin-middleware";
-import { inputCheckErrorsMiddleware } from "@/global-middlewares/inputCheckErrorsMiddleware";
-import { SETTINGS } from "@/settings";
-import { RequestWithParams } from "@/types";
 import { NextFunction, Response } from "express";
 import { body } from "express-validator";
+
+import { adminMiddleware } from "../../../global-middlewares/admin-middleware";
+import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
+import { SETTINGS } from "../../../settings";
+import { RequestWithParams } from "../../../types";
+import { UsersURIParamsModel } from "../models/UsersURIParamsModel";
+import { userServices } from "../service/users.service";
 
 export const loginValidator = body("login")
   .isString()

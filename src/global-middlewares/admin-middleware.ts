@@ -1,5 +1,6 @@
-import { SETTINGS } from "@/settings";
 import { NextFunction, Request, Response } from "express";
+
+import { SETTINGS } from "../settings";
 
 export const fromBase64ToUTF8 = (code: string) => {
   const buff = Buffer.from(code, "base64");

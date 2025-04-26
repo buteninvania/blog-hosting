@@ -1,5 +1,5 @@
-export type BlogPostInputModel = {
-    title: string
-    shortDescription: string
-    content: string
+export interface BlogPostInputModel {
+  content: string;
+  shortDescription: string;
+  title: string;
 }

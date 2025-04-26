@@ -1,14 +1,6 @@
 import { req } from "./test.helpers";
 import { SETTINGS } from "../src/settings";
-import { PostDbType } from "../src/db/post-db-type";
-import { PostsCreateModel } from "../src/features/posts/models/PostsCreateModel";
 import { codedAuth, createString } from "./utils/datasets";
-import { postsTestManager } from "./utils/postsTestManager";
-import { BlogsCreateModel } from "../src/features/blogs/models/BlogsCreateModel";
-import { blogsTestManager } from "./utils/blogsTestManager";
-import { BlogDbType } from "../src/db/blog-db-type";
-import { BlogsViewModel } from "../src/features/blogs/models/BlogsViewModel";
-import { PostsViewModel } from "../src/features/posts/models/PostsViewModel";
 import { UserDbType } from "../src/db/user-db-type";
 import { UsersCreateModel } from "../src/features/users/models/UsersCreateModel";
 import { usersTestManager } from "./utils/usersTestManager";

@@ -1,3 +1,3 @@
-export type BlogsURIParamsModel = {
-    id: string
+export interface BlogsURIParamsModel {
+  id: string;
 }

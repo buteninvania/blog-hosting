@@ -1,5 +1,6 @@
-import { inputCheckErrorsMiddleware } from "@/global-middlewares/inputCheckErrorsMiddleware";
 import { body } from "express-validator";
+
+import { inputCheckErrorsMiddleware } from "../../../global-middlewares/inputCheckErrorsMiddleware";
 
 export const loginOrEmailValidator = body("loginOrEmail").isString().withMessage("not string").trim();
 

@@ -1,8 +1,7 @@
-import { postCollection } from "@/db/mongo-db";
-import { PaginatedPostsViewModel, PostDbType } from "@/db/post-db-type";
-import { GetPostsQueryParamsModel } from "@/features/posts/models/GetPostsQueryParamsModel";
-import { PostsCreateModel } from "@/features/posts/models/PostsCreateModel";
-
+import { postCollection } from "../db/mongo-db";
+import { PaginatedPostsViewModel, PostDbType } from "../db/post-db-type";
+import { GetPostsQueryParamsModel } from "../features/posts/models/GetPostsQueryParamsModel";
+import { PostsCreateModel } from "../features/posts/models/PostsCreateModel";
 import { blogsRepository } from "./mongo-db-blogs-repository";
 
 export const postsRepository = {
