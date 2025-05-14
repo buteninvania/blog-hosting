@@ -25,22 +25,13 @@ export const websiteUrlValidator = body("websiteUrl")
   .isLength({ max: 100, min: 1 })
   .withMessage("more then 100 or 0");
 
-export const findBlogValidator = async (req: Request<{ id: string }>, res: Response, next: NextFunction) => {
+export const findBlogValidator = async (req: Request, res: Response, next: NextFunction) => {
   const foundValidator = await blogsRepositoryMongo.get(req.params.id);
-  if (foundValidator) {
-    next();
-  } else {
+  if (!foundValidator) {
     res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    return;
   }
-};
-
-export const findBlogIdValidator = async (req: Request<{ blogId: string }>, res: Response, next: NextFunction) => {
-  const foundValidator = await blogsRepositoryMongo.get(req.params.blogId);
-  if (foundValidator) {
-    next();
-  } else {
-    res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
-  }
+  next();
 };
 
 export const createBlogValidators = [adminMiddleware, nameValidator, descriptionValidator, websiteUrlValidator, inputCheckErrorsMiddleware];
@@ -57,7 +48,7 @@ export const updateBlogValidators = [
 
 export const createPostByBlogIdValidators = [
   adminMiddleware,
-  findBlogIdValidator,
+  findBlogValidator,
   titleValidator,
   shortDescriptionValidator,
   contentValidator,

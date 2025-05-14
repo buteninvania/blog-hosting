@@ -8,10 +8,9 @@ export const inputCheckErrorsMiddleware = (req: Request, res: Response<OutputErr
   if (!e.isEmpty()) {
     const eArray = e.array({ onlyFirstError: true }) as { msg: string; path: FieldNamesType }[];
 
-    res.status(400).json({
+    return res.status(400).json({
       errorsMessages: eArray.map((x) => ({ field: x.path, message: x.msg })),
     });
-    return;
   }
 
   next();

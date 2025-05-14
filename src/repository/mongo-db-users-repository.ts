@@ -17,9 +17,6 @@ export const usersRepository = {
   async create(user: UsersCreateModel): Promise<string> {
     const id = new Date().toISOString() + Math.random();
 
-    // const salt = await genSalt(10);
-    // const hashedPassword = await hash(user.password, salt);
-
     const salt = genSaltSync(10);
     const hashedPassword = hashSync(user.password, salt);
 

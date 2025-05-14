@@ -37,9 +37,9 @@ const blogController = {
     return newPost ? res.status(SETTINGS.HTTP_STATUSES.CREATED).json(newPost) : res.sendStatus(SETTINGS.HTTP_STATUSES.BAD_REQUEST);
   },
   deleteBlogController: async (req: RequestWithParams<BlogsURIParamsModel>, res: Response) => {
-    (await blogServices.deleteBlog(req.params.id))
-      ? res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT)
-      : res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    const result = await blogServices.deleteBlog(req.params.id);
+    if (!result) return res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+    return res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT);
   },
   getBlogController: async (req: RequestWithParams<BlogsURIParamsModel>, res: Response<BlogsViewModel>) => {
     const foundBlog = await blogServices.getBlog(req.params.id);
@@ -61,17 +61,20 @@ const blogController = {
     const result = await postServices.getPostsByBlogId(foundBlog.id, queryParams);
     return res.status(SETTINGS.HTTP_STATUSES.OK).json(result);
   },
-  updateBlogController: async (req: RequestWithParamsAndBody<BlogsURIParamsModel, BlogsUpdateModel>, res: Response<null | OutputErrorsType>) => {
+  updateBlogController: async (req: RequestWithParamsAndBody<BlogsURIParamsModel, BlogsUpdateModel>, res: Response): Promise<void> => {
     const isUpdated = await blogServices.updateBlog(req.params.id, req.body);
-    if (!isUpdated) return res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
-    return res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT);
+    if (!isUpdated) {
+      res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+      return;
+    }
+    res.sendStatus(SETTINGS.HTTP_STATUSES.NO_CONTENT);
   },
 };
 
 blogsRouter.get("/", blogController.getBlogsController);
 blogsRouter.get("/:id", blogController.getBlogController);
-blogsRouter.post("/", ...createBlogValidators, blogController.createBlogController);
-blogsRouter.put("/:id", updateBlogValidators, blogController.updateBlogController);
+blogsRouter.post("/", createBlogValidators, blogController.createBlogController);
+blogsRouter.put("/:id", ...updateBlogValidators, blogController.updateBlogController);
 blogsRouter.delete("/:id", deleteBlogValidators, blogController.deleteBlogController);
 blogsRouter.get("/:blogId/posts", blogController.getPostsByBlogIdController);
 blogsRouter.post("/:blogId/posts", createPostByBlogIdValidators, blogController.createPostByBlogIdController);

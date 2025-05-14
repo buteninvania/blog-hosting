@@ -16,6 +16,7 @@ export const SETTINGS = {
     NOT_FOUND: 404,
     OK: 200,
   },
+  JWT_SECRET: "blog",
   MONGODB_URI: MONGODB_URI ?? "mongodb://localhost:27017",
   PATH: {
     AUTH: "/auth",

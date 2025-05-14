@@ -14,7 +14,7 @@ export const fromUTF8ToBase64 = (code: string) => {
 };
 
 export const adminMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const auth = req.headers.authorization!;
+  const auth = req.headers.authorization;
 
   if (!auth) {
     res.status(401).json({});
