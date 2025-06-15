@@ -214,6 +214,7 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.BLOGS}`, () => {
       .post(`${SETTINGS.PATH.BLOGS}/${firstBlogCreated.id}/posts`)
       .set({ Authorization: "Basic " + codedAuth })
       .send(newPost1);
+
     expect(resultBlogs.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
 
     const resultBlogs2 = await req

@@ -26,7 +26,9 @@ export const websiteUrlValidator = body("websiteUrl")
   .withMessage("more then 100 or 0");
 
 export const findBlogValidator = async (req: Request, res: Response, next: NextFunction) => {
-  const foundValidator = await blogsRepositoryMongo.get(req.params.id);
+  const id = req.params.id || req.params.blogId;
+  const foundValidator = await blogsRepositoryMongo.get(id);
+
   if (!foundValidator) {
     res.sendStatus(SETTINGS.HTTP_STATUSES.NOT_FOUND);
     return;
