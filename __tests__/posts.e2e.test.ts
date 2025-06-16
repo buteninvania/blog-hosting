@@ -8,6 +8,8 @@ import { BlogsCreateModel } from "../src/features/blogs/models/BlogsCreateModel"
 import { blogsTestManager } from "./utils/blogsTestManager";
 import { BlogDbType } from "../src/db/blog-db-type";
 import { PostsViewModel } from "../src/features/posts/models/PostsViewModel";
+import { usersTestManager } from "./utils/usersTestManager";
+import { authRouter } from "../src/features/auth/routes/auth.router";
 
 describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
   let firstBlogCreated: BlogDbType;
@@ -275,5 +277,127 @@ describe(`e2e tests pack for router ${SETTINGS.PATH.POSTS}`, () => {
     const sortedNames = [...titles].sort((a, b) => b.localeCompare(a));
 
     expect(titles).toEqual(sortedNames);
+  });
+  // [ ] should not return the list of comments because there is no post and 404
+  it("should not return the list of comments because there is no post and 404", async () => {
+    const response = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}/comments`);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NOT_FOUND);
+  });
+  // [ ] shouldn't create a comment on the post and return a 401
+  it("shouldn't not create a comment on the post and return a 401", async () => {
+    const response = await req.post(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}/comments`);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.NO_AUTH);
+  });
+  // shouldn't create a comment on the post and return a 400 (max length 300)
+  it("shouldn't not create a comment on the post and return a 400", async () => {
+    const userData = {
+      login: "login1",
+      email: "email1@gmail.com",
+      password: "pass1",
+    };
+    const createUserResult = await usersTestManager.createUser(userData, codedAuth);
+    expect(createUserResult.response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
+    expect(createUserResult.createdEntity.login).toBe(userData.login);
+
+    const loginInput = {
+      loginOrEmail: "login1",
+      email: "email1",
+    };
+
+    const accessTokenResult = await req.post(`${SETTINGS.PATH.AUTH}/login`).send(loginInput).expect(SETTINGS.HTTP_STATUSES.OK);
+    expect(accessTokenResult.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+    expect(accessTokenResult.body).toEqual({
+      accessToken: expect.any(String),
+    });
+
+    const createCommentData = {
+      content: createString(301),
+    };
+
+    const result = await postsTestManager.createComment(createCommentData, firstPostCreated.id, accessTokenResult.body.accessToken);
+
+    expect(result.response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST);
+    expect(result.response.body).toEqual({
+      errorsMessages: [
+        {
+          message: "Max length for content is 300",
+          field: "content",
+        },
+      ],
+    });
+  });
+  // shouldn't create a comment on the post and return a 400 (min length 20)
+  it("shouldn't not create a comment on the post and return a 400", async () => {
+    const loginInput = {
+      loginOrEmail: "login1",
+      email: "email1",
+    };
+
+    const accessTokenResult = await req.post(`${SETTINGS.PATH.AUTH}/login`).send(loginInput).expect(SETTINGS.HTTP_STATUSES.OK);
+    expect(accessTokenResult.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+    expect(accessTokenResult.body).toEqual({
+      accessToken: expect.any(String),
+    });
+
+    const createCommentData = {
+      content: createString(10),
+    };
+
+    const result = await postsTestManager.createComment(createCommentData, firstPostCreated.id, accessTokenResult.body.accessToken);
+
+    expect(result.response.status).toBe(SETTINGS.HTTP_STATUSES.BAD_REQUEST);
+    expect(result.response.body).toEqual({
+      errorsMessages: [
+        {
+          message: "Min length for content is 20",
+          field: "content",
+        },
+      ],
+    });
+  });
+  // should create a comment on the post and 201
+  it("should create a comment on the post and 201", async () => {
+    const loginInput = {
+      loginOrEmail: "login1",
+      email: "email1",
+    };
+
+    const accessTokenResult = await req.post(`${SETTINGS.PATH.AUTH}/login`).send(loginInput).expect(SETTINGS.HTTP_STATUSES.OK);
+    expect(accessTokenResult.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+    expect(accessTokenResult.body).toEqual({
+      accessToken: expect.any(String),
+    });
+
+    const createCommentData = {
+      content: createString(100),
+    };
+
+    const result = await postsTestManager.createComment(createCommentData, firstPostCreated.id, accessTokenResult.body.accessToken);
+    expect(result.response.status).toBe(SETTINGS.HTTP_STATUSES.CREATED);
+    expect(result.response.body).toEqual({
+      id: expect.any(String),
+      content: createCommentData.content,
+      commentatorInfo: {
+        userId: expect.any(String),
+        userLogin: loginInput.loginOrEmail,
+      },
+      createdAt: expect.any(String),
+    });
+  });
+  // should return all comments by post id and 200
+  it("should return all comments by post id and 200", async () => {
+    const response = await req.get(`${SETTINGS.PATH.POSTS}/${firstPostCreated.id}/comments`);
+    expect(response.status).toBe(SETTINGS.HTTP_STATUSES.OK);
+    expect(response.body).toEqual([
+      {
+        id: expect.any(String),
+        content: expect.any(String),
+        commentatorInfo: {
+          userId: expect.any(String),
+          userLogin: expect.any(String),
+        },
+        createdAt: expect.any(String),
+      },
+    ]);
   });
 });
